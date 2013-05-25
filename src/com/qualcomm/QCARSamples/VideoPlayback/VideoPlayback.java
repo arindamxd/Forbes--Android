@@ -886,6 +886,8 @@ public class VideoPlayback extends Activity
 		
 		//@todo show loading here
 		get_trackers();
+		
+		mRenderer.setTrackablesData(this.json_trackers_data);
 		get_offline_movies();
 	    download_offline_movies();
 		 

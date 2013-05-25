@@ -30,6 +30,10 @@ package com.qualcomm.QCARSamples.VideoPlayback;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.opengl.GLSurfaceView;
 import android.os.SystemClock;
 import android.util.Log;
@@ -53,6 +57,8 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
     private boolean mShouldPlayImmediately[]            = null;
     private long mLostTrackingSince[]                   = null;
     private boolean mLoadRequested[]                    = null;
+
+	private JSONArray json_trackables_data;
 
     public VideoPlaybackRenderer() {
 
@@ -85,6 +91,9 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
         mVideoPlayerHelper[target] = newVideoPlayerHelper;
     }
 
+    
+    
+    
     public void requestLoad(int target, String movieName, int seekPosition, boolean playImmediately)
     {
         mMovieName[target] = movieName;
@@ -111,6 +120,47 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
     /** Native function that informs whether the target is currently being tracked. */
     public native boolean isTracking(int target);
 
+    
+    /** Returns the number of registered textures. */
+    public int getTrackablesCount()
+    {
+//    	Log.i("getDupa", "get dupa: " + json_trackables_data.toString() );
+        return json_trackables_data.length();
+    }
+    
+    public int getEmtId( int trackable_id )
+    {
+    	Log.i("getEmtId", "getEmtId: " + Integer.toString(trackable_id) );
+    	JSONObject trackable_info = getTrackableInfo(trackable_id);
+    	int emt_id = -1;
+    	try {
+			 emt_id = trackable_info.getInt("emt_id");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        return emt_id;
+    }
+    
+    private JSONObject getTrackableInfo( int trackable_id ){
+    	for ( int i =0; i < this.json_trackables_data.length(); i++ ){
+   			try {
+				JSONObject wiersz = (JSONObject)this.json_trackables_data.get(i);
+				int t_id = wiersz.getInt("t_id");
+				if ( t_id == trackable_id ){
+					return wiersz;
+				}
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+   		}   
+    	return null;
+    }
+    
+
+    
     /** Called when the surface is created or recreated. */
     public void onSurfaceCreated(GL10 gl, EGLConfig config)
     {
@@ -174,6 +224,15 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
     }
 
 
+    /** Store the Player Helper object passed from the main activity */
+    public void setTrackablesData(JSONArray tdata)
+    {
+        json_trackables_data = tdata;
+        //Log.i("setTrackablesData", "setTrackablesData with: " + tdata.toString() );
+    }
+    
+    
+    
     /** The native render function. */
     public native void renderFrame();
 

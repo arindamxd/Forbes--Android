@@ -447,11 +447,196 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_isTracking(JNI
     return isTracking[target];
 }
 
+
+void renderFrame_renderKeyFrame( const QCAR::TrackableResult* trackableResult, int currentTarget  ){
+	QCAR::Matrix44F modelViewMatrixKeyframe = QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
+	QCAR::Matrix44F modelViewProjectionKeyframe;
+	SampleUtils::translatePoseMatrix(0.0f, 0.0f, targetPositiveDimensions[currentTarget].data[0],
+										&modelViewMatrixKeyframe.data[0]);
+
+	float ratio=1.0;
+	if (textures[0]->mSuccess)
+		ratio = keyframeQuadAspectRatio[currentTarget];
+	else
+		ratio = targetPositiveDimensions[currentTarget].data[1] / targetPositiveDimensions[currentTarget].data[0];
+
+	SampleUtils::scalePoseMatrix(targetPositiveDimensions[currentTarget].data[0],
+								 targetPositiveDimensions[currentTarget].data[0]*ratio,
+								 targetPositiveDimensions[currentTarget].data[0],
+								 &modelViewMatrixKeyframe.data[0]);
+	SampleUtils::multiplyMatrix(&projectionMatrix.data[0],
+								&modelViewMatrixKeyframe.data[0] ,
+								&modelViewProjectionKeyframe.data[0]);
+
+	glUseProgram(keyframeShaderID);
+	// Prepare for rendering the keyframe
+	glVertexAttribPointer(keyframeVertexHandle, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) &quadVertices[0]);
+	glVertexAttribPointer(keyframeNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) &quadNormals[0]);
+	glVertexAttribPointer(keyframeTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) &quadTexCoords[0]);
+	glEnableVertexAttribArray(keyframeVertexHandle);
+	glEnableVertexAttribArray(keyframeNormalHandle);
+	glEnableVertexAttribArray(keyframeTexCoordHandle);
+	glActiveTexture(GL_TEXTURE0);
+	// The first loaded texture from the assets folder is the keyframe
+	glBindTexture(GL_TEXTURE_2D, textures[0]->mTextureID);
+	glUniformMatrix4fv(keyframeMVPMatrixHandle, 1, GL_FALSE,  (GLfloat*)&modelViewProjectionKeyframe.data[0] );
+	glUniform1i(keyframeTexSampler2DHandle, 0 /*GL_TEXTURE0*/);
+	// Render
+	glDrawElements(GL_TRIANGLES, NUM_QUAD_INDEX, GL_UNSIGNED_SHORT, (const GLvoid*) &quadIndices[0]);
+	glDisableVertexAttribArray(keyframeVertexHandle);
+	glDisableVertexAttribArray(keyframeNormalHandle);
+	glDisableVertexAttribArray(keyframeTexCoordHandle);
+	glUseProgram(0);
+}
+
+
+
+void renderFrame_renderActualContents( const QCAR::TrackableResult* trackableResult, int currentTarget  ){
+	QCAR::Matrix44F modelViewMatrixVideo = QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
+	QCAR::Matrix44F modelViewProjectionVideo;
+	SampleUtils::translatePoseMatrix(0.0f, 0.0f, targetPositiveDimensions[currentTarget].data[0],  &modelViewMatrixVideo.data[0]);
+
+//            // Here we use the aspect ratio of the video frame
+	SampleUtils::scalePoseMatrix(targetPositiveDimensions[currentTarget].data[0],
+								 targetPositiveDimensions[currentTarget].data[0]*videoQuadAspectRatio[currentTarget],
+								 targetPositiveDimensions[currentTarget].data[0],
+								 &modelViewMatrixVideo.data[0]);
+	SampleUtils::multiplyMatrix(&projectionMatrix.data[0],
+								&modelViewMatrixVideo.data[0] ,
+								&modelViewProjectionVideo.data[0]);
+
+	glUseProgram(videoPlaybackShaderID);
+
+	// Prepare for rendering the keyframe
+	glVertexAttribPointer(videoPlaybackVertexHandle, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) &quadVertices[0]);
+	glVertexAttribPointer(videoPlaybackNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) &quadNormals[0]);
+	glVertexAttribPointer(videoPlaybackTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) &videoQuadTextureCoordsTransformedChips[0]);
+	glEnableVertexAttribArray(videoPlaybackVertexHandle);
+	glEnableVertexAttribArray(videoPlaybackNormalHandle);
+	glEnableVertexAttribArray(videoPlaybackTexCoordHandle);
+	glActiveTexture(GL_TEXTURE0);
+
+	// IMPORTANT:
+	// Notice here that the texture that we are binding is not the
+	// typical GL_TEXTURE_2D but instead the GL_TEXTURE_EXTERNAL_OES
+	glBindTexture(GL_TEXTURE_EXTERNAL_OES, videoPlaybackTextureID[currentTarget]);
+	glUniformMatrix4fv(videoPlaybackMVPMatrixHandle, 1, GL_FALSE, (GLfloat*)&modelViewProjectionVideo.data[0]);
+	glUniform1i(videoPlaybackTexSamplerOESHandle, 0 /*GL_TEXTURE0*/);
+
+	// Render
+	glDrawElements(GL_TRIANGLES, NUM_QUAD_INDEX, GL_UNSIGNED_SHORT,(const GLvoid*) &quadIndices[0]);
+	glDisableVertexAttribArray(videoPlaybackVertexHandle);
+	glDisableVertexAttribArray(videoPlaybackNormalHandle);
+	glDisableVertexAttribArray(videoPlaybackTexCoordHandle);
+	glUseProgram(0);
+}
+
+
+void renderFrame_renderPlayerIcon( const QCAR::TrackableResult* trackableResult, int currentTarget  ){
+	// The following section renders the icons. The actual textures used
+	// are loaded from the assets folder
+	if ((currentStatus[currentTarget] == READY)  || (currentStatus[currentTarget] == REACHED_END) ||
+		(currentStatus[currentTarget] == PAUSED) || (currentStatus[currentTarget] == NOT_READY)   ||
+		(currentStatus[currentTarget] == ERROR))
+	{
+		// If the movie is ready to be played, pause, has reached end or is not  ready then we display one of the icons
+		QCAR::Matrix44F modelViewMatrixButton = QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
+		QCAR::Matrix44F modelViewProjectionButton;
+		glDepthFunc(GL_LEQUAL);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// The inacuracy of the rendering process in some devices means that
+		// even if we use the "Less or Equal" version of the depth function
+		// it is likely that we will get ugly artifacts
+		// That is the translation in the Z direction is slightly different
+		// Another posibility would be to use a depth func "ALWAYS" but
+		// that is typically not a good idea
+		SampleUtils::translatePoseMatrix(0.0f, 0.0f, targetPositiveDimensions[currentTarget].data[1]/1.98f, &modelViewMatrixButton.data[0]);
+		SampleUtils::scalePoseMatrix((targetPositiveDimensions[currentTarget].data[1]/2.0f),
+									 (targetPositiveDimensions[currentTarget].data[1]/2.0f),
+									 (targetPositiveDimensions[currentTarget].data[1]/2.0f),
+									 &modelViewMatrixButton.data[0]);
+		SampleUtils::multiplyMatrix(&projectionMatrix.data[0], &modelViewMatrixButton.data[0], &modelViewProjectionButton.data[0]);
+		glUseProgram(keyframeShaderID);
+		glVertexAttribPointer(keyframeVertexHandle, 3, GL_FLOAT, GL_FALSE, 0,  (const GLvoid*) &quadVertices[0]);
+		glVertexAttribPointer(keyframeNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) &quadNormals[0]);
+		glVertexAttribPointer(keyframeTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0,  (const GLvoid*) &quadTexCoords[0]);
+		glEnableVertexAttribArray(keyframeVertexHandle);
+		glEnableVertexAttribArray(keyframeNormalHandle);
+		glEnableVertexAttribArray(keyframeTexCoordHandle);
+		glActiveTexture(GL_TEXTURE0);
+
+		// Depending on the status in which we are we choose the appropriate
+		// texture to display. Notice that unlike the video these are regular GL_TEXTURE_2D textures
+		switch (currentStatus[currentTarget])
+		{
+			case READY:
+				glBindTexture(GL_TEXTURE_2D, textures[2]->mTextureID);
+				break;
+			case REACHED_END:
+				glBindTexture(GL_TEXTURE_2D, textures[2]->mTextureID);
+				break;
+			case PAUSED:
+				glBindTexture(GL_TEXTURE_2D, textures[2]->mTextureID);
+				break;
+			case NOT_READY:
+				glBindTexture(GL_TEXTURE_2D, textures[3]->mTextureID);
+				break;
+			case ERROR:
+				glBindTexture(GL_TEXTURE_2D, textures[4]->mTextureID);
+				break;
+			default:
+				glBindTexture(GL_TEXTURE_2D, textures[3]->mTextureID);
+				break;
+		}
+		glUniformMatrix4fv(keyframeMVPMatrixHandle, 1, GL_FALSE,
+						   (GLfloat*)&modelViewProjectionButton.data[0] );
+		glUniform1i(keyframeTexSampler2DHandle, 0 /*GL_TEXTURE0*/);
+
+		// Render
+		glDrawElements(GL_TRIANGLES, NUM_QUAD_INDEX, GL_UNSIGNED_SHORT,  (const GLvoid*) &quadIndices[0]);
+
+		glDisableVertexAttribArray(keyframeVertexHandle);
+		glDisableVertexAttribArray(keyframeNormalHandle);
+		glDisableVertexAttribArray(keyframeTexCoordHandle);
+
+		glUseProgram(0);
+
+		// Finally we return the depth func to its original state
+		glDepthFunc(GL_LESS);
+		glDisable(GL_BLEND);
+	}
+}
+
+
 JNIEXPORT void JNICALL
 Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame(JNIEnv * env, jobject obj)
 {
+
 	// Handle to the activity class:
 	jclass activityClass = env->GetObjectClass(obj);
+	jmethodID getTrackablesCount = env->GetMethodID(activityClass,
+													"getTrackablesCount", "()I");
+	if (getTrackablesCount == 0)
+	{
+		LOG("Function getTrackablesCount() not found.");
+		return;
+	}
+
+	jmethodID getEmtId = env->GetMethodID(activityClass,
+													"getEmtId", "(I)I");
+	if (getEmtId == 0)
+	{
+		LOG("Function getEmtId() not found.");
+		return;
+	}
+
+//
+
+
+
+
     // Clear color and depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Get the state from QCAR and mark the beginning of a rendering section
@@ -490,9 +675,6 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame(JN
             }
         }
         else{
-    // Did we find any trackables this frame?
-//    for(int tIdx = 0; tIdx < state.getNumTrackableResults(); tIdx++)
-//    {
         // Get the trackable:
         const QCAR::TrackableResult* trackableResult = state.getTrackableResult(0);
 
@@ -507,281 +689,58 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame(JN
         current_tid = imageTarget.getName();
 
 
-//        tmp_track_id = [NSString stringWithFormat:@"%s", imageTarget.getName()];
-//		NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
-//
-//		BOOL _diferent = [tmp_track_id isEqualToString:[prefs stringForKey:@"current_track_id"]];
-//		if ( !_diferent ){
-//			[videoPlayerHelper[i] unload];
-//			[prefs setObject:tmp_track_id forKey:@"current_track_id"];
-//			loadMovie = YES;
-//			emt_force_zero = YES;
-//		}
-
-
-        jclass activityClass = env->GetObjectClass(obj);
-
-        jmethodID getTextureCountMethodID = env->GetMethodID(activityClass,
-                                                           "getTextureCount", "()I");
-
-
-        if (getTextureCountMethodID == 0)
-            {
-                LOG("Function getTextureCount() not found.");
-                return;
-            }
-
-            textureCount = env->CallIntMethod(obj, getTextureCountMethodID);
-            LOG("textureCount: %d", textureCount);
-
-
-
-        modelViewMatrix[currentTarget] = QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
-
-        isTracking[currentTarget] = true;
-
-        targetPositiveDimensions[currentTarget] = imageTarget.getSize();
-        LOG("VP.cpp::530::");
-
-        // The pose delivers the center of the target, thus the dimensions
-        // go from -width/2 to width/2, same for height
-        targetPositiveDimensions[currentTarget].data[0] /= 2.0f;
-        targetPositiveDimensions[currentTarget].data[1] /= 2.0f;
-
-        LOG("VP.cpp::535");
-
-        // If the movie is ready to start playing or it has reached the end
-        // of playback we render the keyframe
-        if ((currentStatus[currentTarget] == READY) || (currentStatus[currentTarget] == REACHED_END) || 
-            (currentStatus[currentTarget] == NOT_READY) || (currentStatus[currentTarget] == ERROR))
-        {
-        	LOG("VP.cpp::542");
-
-            QCAR::Matrix44F modelViewMatrixKeyframe =
-                QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
-            QCAR::Matrix44F modelViewProjectionKeyframe;
-            SampleUtils::translatePoseMatrix(0.0f, 0.0f, targetPositiveDimensions[currentTarget].data[0],
-                                                &modelViewMatrixKeyframe.data[0]);
-
-
-
-            // Here we use the aspect ratio of the keyframe since it
-            // is likely that it is not a perfect square
-
-            float ratio=1.0;
-            LOG("VP.cpp::555");
-
-            if (textures[0]->mSuccess)
-            	ratio = keyframeQuadAspectRatio[currentTarget];
-            else
-            	ratio = targetPositiveDimensions[currentTarget].data[1] / targetPositiveDimensions[currentTarget].data[0];
-
-            LOG("VP.cpp::561 ratio=%f", ratio);
-
-            SampleUtils::scalePoseMatrix(targetPositiveDimensions[currentTarget].data[0],
-                                         targetPositiveDimensions[currentTarget].data[0]*ratio,
-                                         targetPositiveDimensions[currentTarget].data[0],
-                                         &modelViewMatrixKeyframe.data[0]);
-            SampleUtils::multiplyMatrix(&projectionMatrix.data[0],
-                                        &modelViewMatrixKeyframe.data[0] ,
-                                        &modelViewProjectionKeyframe.data[0]);
-
-            glUseProgram(keyframeShaderID);
-            LOG("VP.cpp::569");
-            // Prepare for rendering the keyframe
-            glVertexAttribPointer(keyframeVertexHandle, 3, GL_FLOAT, GL_FALSE, 0,
-                                  (const GLvoid*) &quadVertices[0]);
-            glVertexAttribPointer(keyframeNormalHandle, 3, GL_FLOAT, GL_FALSE, 0,
-                                  (const GLvoid*) &quadNormals[0]);
-            glVertexAttribPointer(keyframeTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0,
-                                  (const GLvoid*) &quadTexCoords[0]);
-
-            glEnableVertexAttribArray(keyframeVertexHandle);
-            glEnableVertexAttribArray(keyframeNormalHandle);
-            glEnableVertexAttribArray(keyframeTexCoordHandle);
-
-            glActiveTexture(GL_TEXTURE0);
-
-            // The first loaded texture from the assets folder is the keyframe
-            glBindTexture(GL_TEXTURE_2D, textures[0]->mTextureID);
-            glUniformMatrix4fv(keyframeMVPMatrixHandle, 1, GL_FALSE,
-                               (GLfloat*)&modelViewProjectionKeyframe.data[0] );
-            glUniform1i(keyframeTexSampler2DHandle, 0 /*GL_TEXTURE0*/);
-            LOG("VP.cpp::589");
-            // Render
-            glDrawElements(GL_TRIANGLES, NUM_QUAD_INDEX, GL_UNSIGNED_SHORT,
-                           (const GLvoid*) &quadIndices[0]);
-
-            glDisableVertexAttribArray(keyframeVertexHandle);
-            glDisableVertexAttribArray(keyframeNormalHandle);
-            glDisableVertexAttribArray(keyframeTexCoordHandle);
-            LOG("VP.cpp::596");
-
-            glUseProgram(0);
+        int number_of_trackers = env->CallIntMethod(obj, getTrackablesCount);
+        LOG("number_of_trackers: %d", number_of_trackers );
+        if ( number_of_trackers == 0 ){
+        	LOG("THERE IS NO INFO ABOUT TRACKERS !!!!");
         }
-        else // In any other case, such as playing or paused, we render the actual contents
-        {
-        	LOG("VP.cpp::599");
-
-            QCAR::Matrix44F modelViewMatrixVideo =
-                QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
-            QCAR::Matrix44F modelViewProjectionVideo;
-            SampleUtils::translatePoseMatrix(0.0f, 0.0f, targetPositiveDimensions[currentTarget].data[0],
-                                             &modelViewMatrixVideo.data[0]);
-
-//            // Here we use the aspect ratio of the video frame
-            SampleUtils::scalePoseMatrix(targetPositiveDimensions[currentTarget].data[0],
-                                         targetPositiveDimensions[currentTarget].data[0]*videoQuadAspectRatio[currentTarget],
-                                         targetPositiveDimensions[currentTarget].data[0],
-                                         &modelViewMatrixVideo.data[0]);
-            SampleUtils::multiplyMatrix(&projectionMatrix.data[0],
-                                        &modelViewMatrixVideo.data[0] ,
-                                        &modelViewProjectionVideo.data[0]);
-//
-            glUseProgram(videoPlaybackShaderID);
-
-            // Prepare for rendering the keyframe
-            glVertexAttribPointer(videoPlaybackVertexHandle, 3, GL_FLOAT, GL_FALSE, 0,
-                                  (const GLvoid*) &quadVertices[0]);
-            glVertexAttribPointer(videoPlaybackNormalHandle, 3, GL_FLOAT, GL_FALSE, 0,
-                                  (const GLvoid*) &quadNormals[0]);
-                glVertexAttribPointer(videoPlaybackTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0,
-                                  (const GLvoid*) &videoQuadTextureCoordsTransformedChips[0]);
-
-//                SampleUtils::rotatePoseMatrix(180.0f, 0.0f, 0.0f, 1.0f, &modelViewMatrixVideo.data[0]);
-
-
-            glEnableVertexAttribArray(videoPlaybackVertexHandle);
-            glEnableVertexAttribArray(videoPlaybackNormalHandle);
-            glEnableVertexAttribArray(videoPlaybackTexCoordHandle);
-
-            glActiveTexture(GL_TEXTURE0);
-
-            // IMPORTANT:
-            // Notice here that the texture that we are binding is not the
-            // typical GL_TEXTURE_2D but instead the GL_TEXTURE_EXTERNAL_OES
-            glBindTexture(GL_TEXTURE_EXTERNAL_OES, videoPlaybackTextureID[currentTarget]);
-            glUniformMatrix4fv(videoPlaybackMVPMatrixHandle, 1, GL_FALSE,
-                               (GLfloat*)&modelViewProjectionVideo.data[0]);
-            glUniform1i(videoPlaybackTexSamplerOESHandle, 0 /*GL_TEXTURE0*/);
-
-            // Render
-            glDrawElements(GL_TRIANGLES, NUM_QUAD_INDEX, GL_UNSIGNED_SHORT,
-                           (const GLvoid*) &quadIndices[0]);
-
-            glDisableVertexAttribArray(videoPlaybackVertexHandle);
-            glDisableVertexAttribArray(videoPlaybackNormalHandle);
-            glDisableVertexAttribArray(videoPlaybackTexCoordHandle);
-
-            glUseProgram(0);
+        else{
+        	LOG("WE SHOULD TAK EMT_ID TO DECIDE WHAT TO DO NEXT !!!!");
+        	emt_id = env->CallIntMethod(obj, getEmtId, currentTarget);
 
         }
 
-        // The following section renders the icons. The actual textures used
-        // are loaded from the assets folder
-
-        LOG("VP.cpp::663");
+        LOG("emt_id: %d", emt_id );
 
 
-        if ((currentStatus[currentTarget] == READY)  || (currentStatus[currentTarget] == REACHED_END) ||
-            (currentStatus[currentTarget] == PAUSED) || (currentStatus[currentTarget] == NOT_READY)   ||
-            (currentStatus[currentTarget] == ERROR))
-        {
-            // If the movie is ready to be played, pause, has reached end or is not
-            // ready then we display one of the icons
-            QCAR::Matrix44F modelViewMatrixButton =
-                QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
-            QCAR::Matrix44F modelViewProjectionButton;
+        if ( emt_id == 0 ){}
+		else if ( emt_id == 1 ){
+			LOG("SHOW CUBE" );
+			//[self renderBlackSomethingOverMakrer :trackableResult];
+			//[self renderLogoOverMakrer:trackableResult];
+		}
+		else if ( emt_id == 6 ){
+			LOG("GALERY ON START" );
+//			[self renderBlackSomethingOverMakrer :trackableResult];
+//			[self renderLogoOverMakrer:trackableResult];
+		}
+        else if ( emt_id == 2 || emt_id == 3 ){
+        	LOG("RENDER VIDEO OVER PAPER");
+        	modelViewMatrix[currentTarget] = QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
+			isTracking[currentTarget] = true;
+			targetPositiveDimensions[currentTarget] = imageTarget.getSize();
+			targetPositiveDimensions[currentTarget].data[0] /= 2.0f;
+			targetPositiveDimensions[currentTarget].data[1] /= 2.0f;
 
-            glDepthFunc(GL_LEQUAL);
+			// If the movie is ready to start playing or it has reached the end of playback we render the keyframe
+			if ((currentStatus[currentTarget] == READY) || (currentStatus[currentTarget] == REACHED_END) ||
+				(currentStatus[currentTarget] == NOT_READY) || (currentStatus[currentTarget] == ERROR))
+			{
+				renderFrame_renderKeyFrame( trackableResult, currentTarget );
+			}
+			else // In any other case, such as playing or paused, we render the actual contents
+			{
+				renderFrame_renderActualContents( trackableResult, currentTarget );
+			}
 
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-
-            // The inacuracy of the rendering process in some devices means that
-            // even if we use the "Less or Equal" version of the depth function
-            // it is likely that we will get ugly artifacts
-            // That is the translation in the Z direction is slightly different
-            // Another posibility would be to use a depth func "ALWAYS" but
-            // that is typically not a good idea
-            SampleUtils::translatePoseMatrix(0.0f, 0.0f, targetPositiveDimensions[currentTarget].data[1]/1.98f,
-                                             &modelViewMatrixButton.data[0]);
-            SampleUtils::scalePoseMatrix((targetPositiveDimensions[currentTarget].data[1]/2.0f),
-                                         (targetPositiveDimensions[currentTarget].data[1]/2.0f),
-                                         (targetPositiveDimensions[currentTarget].data[1]/2.0f),
-                                         &modelViewMatrixButton.data[0]);
-            SampleUtils::multiplyMatrix(&projectionMatrix.data[0],
-                                        &modelViewMatrixButton.data[0] ,
-                                        &modelViewProjectionButton.data[0]);
-
-
-            glUseProgram(keyframeShaderID);
-
-            glVertexAttribPointer(keyframeVertexHandle, 3, GL_FLOAT, GL_FALSE, 0,
-                                  (const GLvoid*) &quadVertices[0]);
-            glVertexAttribPointer(keyframeNormalHandle, 3, GL_FLOAT, GL_FALSE, 0,
-                                  (const GLvoid*) &quadNormals[0]);
-            glVertexAttribPointer(keyframeTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0,
-                                  (const GLvoid*) &quadTexCoords[0]);
-
-            glEnableVertexAttribArray(keyframeVertexHandle);
-            glEnableVertexAttribArray(keyframeNormalHandle);
-            glEnableVertexAttribArray(keyframeTexCoordHandle);
-
-            glActiveTexture(GL_TEXTURE0);
-
-            // Depending on the status in which we are we choose the appropriate
-            // texture to display. Notice that unlike the video these are regular
-            // GL_TEXTURE_2D textures
-            switch (currentStatus[currentTarget])
-            {
-                case READY:
-                    glBindTexture(GL_TEXTURE_2D, textures[2]->mTextureID);
-                    break;
-                case REACHED_END:
-                    glBindTexture(GL_TEXTURE_2D, textures[2]->mTextureID);
-                    break;
-                case PAUSED:
-                    glBindTexture(GL_TEXTURE_2D, textures[2]->mTextureID);
-                    break;
-                case NOT_READY:
-                    glBindTexture(GL_TEXTURE_2D, textures[3]->mTextureID);
-                    break;
-                case ERROR:
-                    glBindTexture(GL_TEXTURE_2D, textures[4]->mTextureID);
-                    break;
-                default:
-                    glBindTexture(GL_TEXTURE_2D, textures[3]->mTextureID);
-                    break;
-            }
-            glUniformMatrix4fv(keyframeMVPMatrixHandle, 1, GL_FALSE,
-                               (GLfloat*)&modelViewProjectionButton.data[0] );
-            glUniform1i(keyframeTexSampler2DHandle, 0 /*GL_TEXTURE0*/);
-
-            // Render
-            glDrawElements(GL_TRIANGLES, NUM_QUAD_INDEX, GL_UNSIGNED_SHORT,
-                           (const GLvoid*) &quadIndices[0]);
-
-            glDisableVertexAttribArray(keyframeVertexHandle);
-            glDisableVertexAttribArray(keyframeNormalHandle);
-            glDisableVertexAttribArray(keyframeTexCoordHandle);
-
-            glUseProgram(0);
-
-            // Finally we return the depth func to its original state
-            glDepthFunc(GL_LESS);
-            glDisable(GL_BLEND);
+			renderFrame_renderPlayerIcon( trackableResult, currentTarget );
         }
 
         SampleUtils::checkGlError("VideoPlayback renderFrame");
     }
 
     glDisable(GL_DEPTH_TEST);
-
     QCAR::Renderer::getInstance().end();
-   // LOG("VP.cpp::764 end");
-
 }
 
 
