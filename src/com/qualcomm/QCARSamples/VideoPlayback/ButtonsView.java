@@ -4,15 +4,8 @@ package com.qualcomm.QCARSamples.VideoPlayback;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.Configuration;
-import android.os.Bundle;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
 
 public class ButtonsView extends View

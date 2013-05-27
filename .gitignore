@@ -44,3 +44,5 @@ bin/dexedLibs/QCAR-a81eb2340ab15763bf08915133625b73.jar
 bin/classes/com/qualcomm/QCARSamples/VideoPlayback/VideoPlayback$10.class
 
 bin/classes/com/qualcomm/QCARSamples/VideoPlayback/VideoPlayback$9.class
+
+bin/classes.dex
