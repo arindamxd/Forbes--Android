@@ -117,6 +117,7 @@ public class VideoPlayback extends Activity
     private static final int APPSTATUS_CAMERA_STOPPED   = 6;
     private static final int APPSTATUS_CAMERA_RUNNING   = 7;
 
+    private Timer t = null;
     // Name of the native dynamic libraries to load:
     private static final String NATIVE_LIB_SAMPLE       = "VideoPlayback";
     private static final String NATIVE_LIB_QCAR         = "QCAR";
@@ -482,6 +483,8 @@ public class VideoPlayback extends Activity
 
         mCurrentActivity = this;
 
+        VideoPlaybackRenderer.setDefaults("trackable_id", "0", getApplicationContext() );
+    	
         
         try{
 	        if ( isOnline() ){
@@ -745,6 +748,7 @@ public class VideoPlayback extends Activity
     
     
     
+    
 
 	public boolean dupa(String extension) {
         
@@ -906,19 +910,97 @@ public class VideoPlayback extends Activity
 	}
 	
 	public void timer_action(){
-		Log.i("timer_action","timer_action: START ");
+//		Log.i("timer_action","timer_action: START ");
 		String trackable_id = VideoPlaybackRenderer.getDefaults("trackable_id",  getApplicationContext() );
-		if (current_trackable_id != Integer.parseInt(trackable_id ) ){
-			current_trackable_id = Integer.parseInt(trackable_id);
-			//CHANGE ICON
-			Log.i("CHANGE ICONS SET","CHANGE ICONS SET");
-//			this.json_marker_trackers_data
+		if(trackable_id == null){
+			Log.i("timer_action","timer_action: NULUUULUULL ");
 		}
-		
-		Log.i("timer_action","timer_action : END : " + trackable_id );
+		else{
+			if (current_trackable_id != Integer.parseInt(trackable_id ) ){
+				current_trackable_id = Integer.parseInt(trackable_id);
+				//CHANGE ICON
+				Log.i("CHANGE ICONS SET","CHANGE ICONS SET");
+				try {
+					setCurrentTrackableData();
+					Log.i("setCurrentTrackableData", " setCurrentTrackableData: " + json_tracker_active_data );
+					if( json_tracker_active_data.getInt("is_right_menu_displayed") == 0 ){
+						Log.i("BUTTONS MUST BE HIDDEN","BUTTONS MUST BE HIDDEN");
+						runOnUiThread(new Runnable() {
+						     public void run() {
+						    	 Log.i("-----------------------", "-----------------------");
+						    	 hideButtonsScreen();
+						//stuff that updates ui
+
+						    }
+						});
+						
+					}
+					else{
+						Log.i("BUTTONS MUST BE SHOWED","BUTTONS MUST BE SHOWED");
+//						showStartupScreen();
+						
+						runOnUiThread(new Runnable() {
+						     public void run() {
+						    	 setupButtonsScreen();
+						    	 Log.i("++++++++++++++++++++++++++++", "++++++++++++++++++++++++++++");
+						    	 showButtonsScreen();
+						//stuff that updates ui
+
+						    }
+						});
+						
+					}
+					
+					setButtonsForCurrentTrackable();
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				//Log.i("BUTTONS FOR MARKER", "BUTTONS FOR MARKER: " + json_buttons_for_tracker.toString() );
+				
+			}
+		}
+//		Log.i("timer_action","timer_action : END : " + trackable_id );
+	}
+	
+	private void setCurrentTrackableData() throws JSONException{
+		json_tracker_active_data = new JSONObject();
+//		if (this.json_marker_trackers_data.length() > 0 )
+			if ( json_trackers_data.length() > 0 ){
+//				Log.i("CHANGE ICONS SET", json_marker_trackers_data.toString() );
+				for ( int i=0; i<json_trackers_data.length(); i++ ){
+					JSONObject wiersz = json_trackers_data.getJSONObject(i);
+					int tid = wiersz.getInt("t_id");
+					if ( tid == current_trackable_id ){
+						json_tracker_active_data = wiersz;
+						break;
+					}
+				}
+			}
+			else{
+				Log.i("CHANGE ICONS SET","TEHERE IS NO BUTTONS FOR THIS SHIT");
+			}
 	}
 	
 	
+	private void setButtonsForCurrentTrackable() throws JSONException{
+		json_buttons_for_tracker = new ArrayList<JSONObject>();
+//		if (this.json_marker_trackers_data.length() > 0 )
+			if ( json_marker_trackers_data.length() > 0 ){
+//				Log.i("CHANGE ICONS SET", json_marker_trackers_data.toString() );
+				for ( int i=0; i<json_marker_trackers_data.length(); i++ ){
+					JSONObject wiersz = json_marker_trackers_data.getJSONObject(i);
+					int tid = wiersz.getInt("t_id");
+					if ( tid == current_trackable_id ){
+						json_buttons_for_tracker.add(wiersz);
+					}
+				}
+			}
+			else{
+				Log.i("CHANGE ICONS SET","TEHERE IS NO BUTTONS FOR THIS SHIT");
+			}
+	}
 	
 	
 	public void activate_library(){
@@ -944,7 +1026,7 @@ public class VideoPlayback extends Activity
 		loadActive( action );
 		
 		//Declare the timer
-		Timer t = new Timer();
+		t = new Timer();
 //		t.scheduleAtFixedRate(task, delay, period);
 //		//Set the schedule function and rate
 		t.scheduleAtFixedRate(new TimerTask() {
@@ -997,7 +1079,7 @@ public class VideoPlayback extends Activity
     		Log.i( "get_all_trackablesdir_by_k_active url", url );
     		this.all_trackablesdir_by_k_active = this.oDB.http_post_return_with_jsonarray(url, null);
     		Log.i( "get_all_trackablesdir_by_k_active", "++++++++++++++++"+Integer.toString( this.all_trackablesdir_by_k_active.length()) );
-    		Log.i( "get_all_trackablesdir_by_k_active", this.all_trackablesdir_by_k_active.toString() );
+    		//Log.i( "get_all_trackablesdir_by_k_active", this.all_trackablesdir_by_k_active.toString() );
 //    		mGUIManager.all_trackablesdir_by_k_active = this.all_trackablesdir_by_k_active;
     		Log.i( "get_all_trackablesdir_by_k_active", "---------------- getTrackers: end" );
     	}
@@ -1120,13 +1202,6 @@ public class VideoPlayback extends Activity
             updateApplicationStatus(APPSTATUS_CAMERA_RUNNING);
         }
 
-        // Setup the start button:
-  
-        
-//        setupButtonScreen();
-        //hideButtonScreen();
-//        setupTutorialScreen();
-//        setupStartButton();
         
         
         // Resume the GL view:
@@ -1137,9 +1212,9 @@ public class VideoPlayback extends Activity
         }
 
         // Do not show the startup screen if we're returning from full screen:
-        if (!mReturningFromFullScreen)
-            showStartupScreen();
-        
+//        if (!mReturningFromFullScreen)
+//            showStartupScreen();
+//        hideStartupScreen();
 //        showTutorialScreen();
 //        showButtonScreen();
         
@@ -1439,12 +1514,9 @@ public class VideoPlayback extends Activity
                             Log.i("====================================>", "AKTYWUJ LIB " );
                             aktywujClicked( false, filename_to_download_active );
                             
-                            // Setup the start screen:
-                            setupButtonScreen();
-                            //hideButtonScreen();
 
 //                            setupStartScreen();
-                            
+//                            hideStartupScreen();
                             // Start the camera:
                             updateApplicationStatus(APPSTATUS_CAMERA_RUNNING);
                         }
@@ -1563,40 +1635,46 @@ public class VideoPlayback extends Activity
     
     
     
+   
+    /** This call sets the start button variable up */
+//    private void setupTutorialButton()
+//    {
+//        mStartButton = (ImageView) findViewById(R.id.start_button);
+//
+//        if (mStartButton != null)
+//        {
+//            // Setup a click listener that hides the StartupScreen:
+//            mStartButton.setOnClickListener(new ImageView.OnClickListener() {
+//                    public void onClick(View arg0) {
+//                    	Log.e("---------------mStartButton.setOnClickListene", "mStartButton.setOnClickListene");
+//                        
+//                        hideStartupScreen();
+//                    }
+//            });
+//        }
+//    }
+    /** Show the startup screen */
     /** TUTORIAL START */
-    private void setupStartScreen()
+    private void setupButtonsScreen()
     {
         // Inflate the view from the xml file:
-        mStartupView = getLayoutInflater().inflate( R.layout.startup_screen, null);
-
-        // Add it to the content view:
-        addContentView(mStartupView, new LayoutParams(
-                LayoutParams.MATCH_PARENT,
-                LayoutParams.MATCH_PARENT));
-
-        this.setupTutorialButton();
-        mStartScreenShowing = true;
+    	Log.i("setupButtonsScreen", "setupButtonsScreen: "+ mStartupView );
+    	if ( mStartupView == null ){
+	        mStartupView = getLayoutInflater().inflate( R.layout.startup_screen, null);
+	
+	        // Add it to the content view:
+	        addContentView(mStartupView, new LayoutParams(
+	                LayoutParams.MATCH_PARENT,
+	                LayoutParams.MATCH_PARENT));
+	
+	//        this.setupTutorialButton();
+    	}
+    	mStartScreenShowing = true;
     }
-    /** This call sets the start button variable up */
-    private void setupTutorialButton()
+    
+    private void showButtonsScreen()
     {
-        mStartButton = (ImageView) findViewById(R.id.start_button);
-
-        if (mStartButton != null)
-        {
-            // Setup a click listener that hides the StartupScreen:
-            mStartButton.setOnClickListener(new ImageView.OnClickListener() {
-                    public void onClick(View arg0) {
-                    	Log.e("---------------mStartButton.setOnClickListene", "mStartButton.setOnClickListene");
-                        
-                        hideStartupScreen();
-                    }
-            });
-        }
-    }
-    /** Show the startup screen */
-    private void showStartupScreen()
-    {
+    	Log.i("showStartupScreen","showStartupScreen");
         if (mStartupView != null)
         {
             mStartupView.setVisibility(View.VISIBLE);
@@ -1604,7 +1682,7 @@ public class VideoPlayback extends Activity
         }
     }
     /** Hide the startup screen */
-    private void hideStartupScreen()
+    private void hideButtonsScreen()
     {
         if (mStartupView != null)
         {
@@ -1615,45 +1693,7 @@ public class VideoPlayback extends Activity
     /** TUTORIAL END */
      
     
-    /** BUTTON VIEW START */
-    private void setupButtonScreen()
-    {
-        // Inflate the view from the xml file:
-//        mButtonView = getLayoutInflater().inflate(
-//            R.layout.interface_overlay, null);
-//        
-        mButtonView2 = new ButtonsView(getApplicationContext(), null);
-        
-        // Add it to the content view:
-        addContentView(mButtonView2, new LayoutParams(
-                LayoutParams.MATCH_PARENT,
-                LayoutParams.MATCH_PARENT));
-
-        mButtonScreenShowing = true;
-    }
-    private void showButtonScreen()
-    {
-    	Log.e("-----------showButtonScreen","showButtonScreen start");
-        if (mButtonView != null)
-        {
-        	mButtonView.setVisibility(View.VISIBLE);
-            mButtonScreenShowing = true;
-
-        	Log.e("-----------showButtonScreen","showButtonScreen end");
-        }
-    }
-    private void hideButtonScreen()
-    {
-        if (mButtonView != null)
-        {
-            mButtonView.setVisibility(View.INVISIBLE);
-            mButtonScreenShowing = false;
-            Log.e("-----------hideButtonScreen","hideButtonScreen");
-            
-        }
-    }
-    
-    /** BUTTON VIEW END */
+   
     
 
     /** Pause all movies except one
@@ -1680,23 +1720,29 @@ public class VideoPlayback extends Activity
     /** Do not exit immediately and instead show the startup screen */
     public void onBackPressed() {
 
-        // If this is the first time the back button is pressed
-        // show the StartupScreen and pause all media:
-        if (!mStartScreenShowing)
-        {
-            // Show the startup screen:
-            showStartupScreen();
-
-            pauseAll(-1);
-        }
-        else // if this is the second time the user pressed the back button
-        {
-            // Hide the Startup View:
-            hideStartupScreen();
-
+//        // If this is the first time the back button is pressed
+//        // show the StartupScreen and pause all media:
+//        if (!mStartScreenShowing)
+//        {
+//            // Show the startup screen:
+//            showStartupScreen();
+//
+//            pauseAll(-1);
+//        }
+//        else // if this is the second time the user pressed the back button
+//        {
+//            // Hide the Startup View:
+//            hideStartupScreen();
+    	if(t != null) {
+    		   t.cancel();
+    		   t.purge();
+    		   t = null;
+    		}
+    	
+    	
             // And exit:
             super.onBackPressed();
-        }
+//        }
     }
 
 

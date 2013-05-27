@@ -734,39 +734,38 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame(JN
         int currentTarget;
 
 
-        LOG("currentTarget: ");
-        LOG(imageTarget.getName());
+//        LOG("currentTarget: %s", imageTarget.getName());
         currentTarget= atoi(imageTarget.getName());
         current_tid = imageTarget.getName();
 
 
         int number_of_trackers = env->CallIntMethod(obj, getTrackablesCount);
-        LOG("number_of_trackers: %d", number_of_trackers );
+//        LOG("number_of_trackers: %d", number_of_trackers );
         if ( number_of_trackers == 0 ){
-        	LOG("THERE IS NO INFO ABOUT TRACKERS !!!!");
+        	//LOG("THERE IS NO INFO ABOUT TRACKERS !!!!");
         }
         else{
-        	LOG("WE SHOULD TAK EMT_ID TO DECIDE WHAT TO DO NEXT !!!!");
+        	//LOG("WE SHOULD TAK EMT_ID TO DECIDE WHAT TO DO NEXT !!!!");
         	emt_id = env->CallIntMethod(obj, getEmtId, currentTarget);
 
         }
 
-        LOG("emt_id: %d", emt_id );
+       // LOG("emt_id: %d", emt_id );
 
 
         if ( emt_id == 0 ){}
 		else if ( emt_id == 1 ){
-			LOG("SHOW CUBE" );
+			//LOG("SHOW CUBE" );
 			//[self renderBlackSomethingOverMakrer :trackableResult];
 			//[self renderLogoOverMakrer:trackableResult];
 		}
 		else if ( emt_id == 6 ){
-			LOG("GALERY ON START" );
+			//LOG("GALERY ON START" );
 //			[self renderBlackSomethingOverMakrer :trackableResult];
 //			[self renderLogoOverMakrer:trackableResult];
 		}
         else if ( emt_id == 2 || emt_id == 3 ){
-        	LOG("RENDER VIDEO OVER PAPER");
+        	//LOG("RENDER VIDEO OVER PAPER");
         	modelViewMatrix[currentTarget] = QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
 			isTracking[currentTarget] = true;
 			targetPositiveDimensions[currentTarget] = imageTarget.getSize();

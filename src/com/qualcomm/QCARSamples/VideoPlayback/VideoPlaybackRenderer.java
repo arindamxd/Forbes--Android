@@ -134,7 +134,6 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
     
     public int getEmtId( int trackable_id )
     {
-    	Log.i("getEmtId", "getEmtId: " + Integer.toString(trackable_id) );
     	JSONObject trackable_info = getTrackableInfo(trackable_id);
     	int emt_id = -1;
     	try {
