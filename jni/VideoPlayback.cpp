@@ -447,12 +447,63 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_isTracking(JNI
     return isTracking[target];
 }
 
+void renderFrame_renderStronaBG( const QCAR::TrackableResult* trackableResult, int currentTarget  ){
+
+	LOG("renderFrame_renderStronaBG");
+
+	QCAR::Matrix44F modelViewMatrixKeyframe = QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
+	QCAR::Matrix44F modelViewProjectionKeyframe;
+	SampleUtils::translatePoseMatrix(0.0f, 0.0f, targetPositiveDimensions[currentTarget].data[0] - 0.15f,
+										&modelViewMatrixKeyframe.data[0]);
+
+//	ShaderUtils::translatePoseMatrix(0.0f, 0.0f, wysokosc_npm,
+	//	                                     &modelViewMatrixVideo.data[0]);
+
+	float ratio=1.0;
+//	if (textures[1]->mSuccess)
+//		ratio = keyframeQuadAspectRatio[currentTarget];
+//	else
+		ratio = targetPositiveDimensions[currentTarget].data[1] / targetPositiveDimensions[currentTarget].data[0];
+
+	SampleUtils::scalePoseMatrix(targetPositiveDimensions[currentTarget].data[0],
+								 targetPositiveDimensions[currentTarget].data[0]*ratio,
+								 targetPositiveDimensions[currentTarget].data[0],
+								 &modelViewMatrixKeyframe.data[0]);
+	SampleUtils::multiplyMatrix(&projectionMatrix.data[0],
+								&modelViewMatrixKeyframe.data[0] ,
+								&modelViewProjectionKeyframe.data[0]);
+
+	glUseProgram(keyframeShaderID);
+	// Prepare for rendering the keyframe
+	glVertexAttribPointer(keyframeVertexHandle, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) &quadVertices[0]);
+	glVertexAttribPointer(keyframeNormalHandle, 3, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) &quadNormals[0]);
+	glVertexAttribPointer(keyframeTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid*) &quadTexCoords[0]);
+	glEnableVertexAttribArray(keyframeVertexHandle);
+	glEnableVertexAttribArray(keyframeNormalHandle);
+	glEnableVertexAttribArray(keyframeTexCoordHandle);
+	glActiveTexture(GL_TEXTURE0);
+	// The first loaded texture from the assets folder is the keyframe
+	glBindTexture(GL_TEXTURE_2D, textures[1]->mTextureID);
+	glUniformMatrix4fv(keyframeMVPMatrixHandle, 1, GL_FALSE,  (GLfloat*)&modelViewProjectionKeyframe.data[0] );
+	glUniform1i(keyframeTexSampler2DHandle, 0 /*GL_TEXTURE0*/);
+	// Render
+	glDrawElements(GL_TRIANGLES, NUM_QUAD_INDEX, GL_UNSIGNED_SHORT, (const GLvoid*) &quadIndices[0]);
+	glDisableVertexAttribArray(keyframeVertexHandle);
+	glDisableVertexAttribArray(keyframeNormalHandle);
+	glDisableVertexAttribArray(keyframeTexCoordHandle);
+	glUseProgram(0);
+
+
+//	glDisable(GL_BLEND);
+}
+
 
 void renderFrame_renderKeyFrame( const QCAR::TrackableResult* trackableResult, int currentTarget  ){
 	QCAR::Matrix44F modelViewMatrixKeyframe = QCAR::Tool::convertPose2GLMatrix(trackableResult->getPose());
 	QCAR::Matrix44F modelViewProjectionKeyframe;
 	SampleUtils::translatePoseMatrix(0.0f, 0.0f, targetPositiveDimensions[currentTarget].data[0],
 										&modelViewMatrixKeyframe.data[0]);
+
 
 	float ratio=1.0;
 	if (textures[0]->mSuccess)
@@ -552,10 +603,10 @@ void renderFrame_renderPlayerIcon( const QCAR::TrackableResult* trackableResult,
 		// That is the translation in the Z direction is slightly different
 		// Another posibility would be to use a depth func "ALWAYS" but
 		// that is typically not a good idea
-		SampleUtils::translatePoseMatrix(0.0f, 0.0f, targetPositiveDimensions[currentTarget].data[1]/1.98f, &modelViewMatrixButton.data[0]);
-		SampleUtils::scalePoseMatrix((targetPositiveDimensions[currentTarget].data[1]/2.0f),
-									 (targetPositiveDimensions[currentTarget].data[1]/2.0f),
-									 (targetPositiveDimensions[currentTarget].data[1]/2.0f),
+		SampleUtils::translatePoseMatrix(0.0f, 0.0f, targetPositiveDimensions[currentTarget].data[1]/2.48f, &modelViewMatrixButton.data[0]);
+		SampleUtils::scalePoseMatrix((targetPositiveDimensions[currentTarget].data[1]/2.5f),
+									 (targetPositiveDimensions[currentTarget].data[1]/2.5f),
+									 (targetPositiveDimensions[currentTarget].data[1]/2.5f),
 									 &modelViewMatrixButton.data[0]);
 		SampleUtils::multiplyMatrix(&projectionMatrix.data[0], &modelViewMatrixButton.data[0], &modelViewProjectionButton.data[0]);
 		glUseProgram(keyframeShaderID);
@@ -733,7 +784,10 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame(JN
 				renderFrame_renderActualContents( trackableResult, currentTarget );
 			}
 
+
 			renderFrame_renderPlayerIcon( trackableResult, currentTarget );
+
+			renderFrame_renderStronaBG( trackableResult, currentTarget );
         }
 
         SampleUtils::checkGlError("VideoPlayback renderFrame");

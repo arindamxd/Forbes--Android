@@ -34,8 +34,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.opengl.GLSurfaceView;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.qualcomm.QCAR.QCAR;
@@ -59,9 +62,10 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
     private boolean mLoadRequested[]                    = null;
 
 	private JSONArray json_trackables_data;
-
-    public VideoPlaybackRenderer() {
-
+	private Context appContext;
+	
+    public VideoPlaybackRenderer(Context appCont ) {
+    	appContext = appCont;
         // Creat an array of the size of the number of targets we have
         mVideoPlayerHelper = new VideoPlayerHelper[VideoPlayback.NUM_TARGETS];
         mMovieName = new String[VideoPlayback.NUM_TARGETS];
@@ -139,10 +143,16 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+    	
+    	setDefaults("trackable_id", Integer.toString(trackable_id), appContext );
+    	
         return emt_id;
     }
     
     private JSONObject getTrackableInfo( int trackable_id ){
+    	
+//    	getDefaults("trackable_id", appContext );
+    	
     	for ( int i =0; i < this.json_trackables_data.length(); i++ ){
    			try {
 				JSONObject wiersz = (JSONObject)this.json_trackables_data.get(i);
@@ -158,6 +168,26 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
    		}   
     	return null;
     }
+    
+    
+    
+    public static void setDefaults(String key, String value, Context context) {
+    	Log.i("setDefaults", "setDefaults seting: " + key + " value: " + value );
+    	
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(key, value);
+        editor.commit();
+    }
+
+    public static String getDefaults(String key, Context context) {
+    	
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String val = preferences.getString(key, null); 
+        Log.i("getDefaults", "getDefaults seting: " + key + " value: " + val );
+    	return val;
+    }
+    
     
 
     

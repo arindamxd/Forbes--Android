@@ -130,7 +130,7 @@ public class VideoPlayback extends Activity
 
     public DB oDB;
     private JSONArray json_trackers_data, all_trackablesdir_by_k_active, json_marker_trackers_data, json_audio_trackers_data, json_globalna_tablica_dirs;
-    private ArrayList<JSONObject> json_tracker_active_data_arrlist;
+    private ArrayList<JSONObject> json_tracker_active_data_arrlist, json_buttons_for_tracker;
     private ArrayList<String> files_to_download;
 	private JSONArray json_media_data;
 	private JSONArray json_news_data;
@@ -144,6 +144,8 @@ public class VideoPlayback extends Activity
 	private JSONArray json_news_data_readed;
 	private String app_version;
 	private int app_code;
+	
+	private int current_trackable_id = 0;
 	
     
     // Movie for the Targets:
@@ -717,6 +719,32 @@ public class VideoPlayback extends Activity
     }
     
     
+    public void get_all_marker_tracker_by_td( ){	
+    	try {
+    		JSONObject last = (JSONObject) this.json_globalna_tablica_dirs.get( json_globalna_tablica_dirs.length()-1 );
+	        Log.i( "get_all_marker_tracker_by_td", "---------------- get_all_marker_tracker_by_td : start" );
+    		String url = BASE_URL + "/index.php/ajax/Common/Trackables/get_all_marker_tracker_by_td?td_id=" + last.getString("td_id");
+    		Log.i( "get_all_marker_tracker_by_td url", url );    		
+    		this.json_marker_trackers_data = this.makeHttpRequest(url, "GET", nvp);
+    		Log.i( "get_all_marker_tracker_by_td", "++++++++++++++++"+Integer.toString( this.json_marker_trackers_data.length()) );
+    		Log.i( "get_all_marker_tracker_by_td", "---------------- get_all_marker_tracker_by_td: end" );
+    	}
+    	catch (Exception e) {
+    		AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
+    	    dlgAlert.setMessage("Unable to connect with server. Check Internet connection.");
+    	    dlgAlert.setTitle("INTERNET CONNECTION PROBLEM");
+    	    dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                	System.exit(0);
+                }
+            } );
+    	    dlgAlert.setCancelable(false);
+    	    dlgAlert.create().show();
+		}
+    }
+    
+    
+    
 
 	public boolean dupa(String extension) {
         
@@ -877,6 +905,21 @@ public class VideoPlayback extends Activity
 		}
 	}
 	
+	public void timer_action(){
+		Log.i("timer_action","timer_action: START ");
+		String trackable_id = VideoPlaybackRenderer.getDefaults("trackable_id",  getApplicationContext() );
+		if (current_trackable_id != Integer.parseInt(trackable_id ) ){
+			current_trackable_id = Integer.parseInt(trackable_id);
+			//CHANGE ICON
+			Log.i("CHANGE ICONS SET","CHANGE ICONS SET");
+//			this.json_marker_trackers_data
+		}
+		
+		Log.i("timer_action","timer_action : END : " + trackable_id );
+	}
+	
+	
+	
 	
 	public void activate_library(){
 		Log.i("ACTION_ACTIVATELIB START", "ACTION_ACTIVATELIB START");
@@ -886,7 +929,7 @@ public class VideoPlayback extends Activity
 		
 		//@todo show loading here
 		get_trackers();
-		
+		get_all_marker_tracker_by_td();
 		mRenderer.setTrackablesData(this.json_trackers_data);
 		get_offline_movies();
 	    download_offline_movies();
@@ -901,22 +944,22 @@ public class VideoPlayback extends Activity
 		loadActive( action );
 		
 		//Declare the timer
-//		Timer t = new Timer();
-////		t.scheduleAtFixedRate(task, delay, period);
+		Timer t = new Timer();
+//		t.scheduleAtFixedRate(task, delay, period);
 //		//Set the schedule function and rate
-//		t.scheduleAtFixedRate(new TimerTask() {
+		t.scheduleAtFixedRate(new TimerTask() {
 //
-//		    @Override
-//		    public void run() {
-//		        //Called each time when 1000 milliseconds (1 second) (the period parameter)
-//		    	Log.i("df","dsf");
-//		    }
-//		         
-//		},
-//		//Set how long before to start calling the TimerTask (in milliseconds)
-//		0,
-//		//Set the amount of time between each execution (in milliseconds)
-//		1000);
+		    @Override
+		    public void run() {
+		        //Called each time when 1000 milliseconds (1 second) (the period parameter)
+		    	timer_action();
+		    }
+		         
+		},
+		//Set how long before to start calling the TimerTask (in milliseconds)
+		0,
+		//Set the amount of time between each execution (in milliseconds)
+		1000);
 		
 		
 		
@@ -1013,7 +1056,7 @@ public class VideoPlayback extends Activity
     {
         mTextures.add(Texture.loadTextureFromApk("VuforiaSizzleReel_1.png",
                 getAssets()));
-        mTextures.add(Texture.loadTextureFromApk("VuforiaSizzleReel_2.png",
+        mTextures.add(Texture.loadTextureFromApk("disco.png",
                 getAssets()));
         mTextures.add(Texture.loadTextureFromApk("play.png",
                 getAssets()));
@@ -1030,6 +1073,8 @@ public class VideoPlayback extends Activity
         return QCAR.GL_20;
     }
 
+    
+    
 
     /** Native tracker initialization and deinitialization. */
     public native int initTracker();
@@ -1710,7 +1755,7 @@ public class VideoPlayback extends Activity
         mGlView = new QCARSampleGLView(this);
         mGlView.init(mQCARFlags, translucent, depthSize, stencilSize);
 
-        mRenderer = new VideoPlaybackRenderer();
+        mRenderer = new VideoPlaybackRenderer( getApplicationContext() );
 
         // The renderer comes has the OpenGL context, thus, loading to texture
         // must happen when the surface has been created. This means that we
