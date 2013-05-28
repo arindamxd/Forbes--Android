@@ -52,3 +52,9 @@ bin/classes/com/qualcomm/QCARSamples/VideoPlayback/R$id.class
 bin/classes/com/qualcomm/QCARSamples/VideoPlayback/VideoPlayback$11.class
 
 bin/classes/com/qualcomm/QCARSamples/VideoPlayback/VideoPlayback$3.class
+
+*.class
+
+gen/com/qualcomm/QCARSamples/VideoPlayback/R.java
+
+*.class

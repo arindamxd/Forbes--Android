@@ -55,6 +55,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -72,6 +73,7 @@ import android.view.MotionEvent;
 
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
+import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -156,8 +158,10 @@ public class VideoPlayback extends Activity
 
     // The StartupScreen view and the start button:
     private View mStartupView                           = null;
+    private View mWebView                           = null;
     private ImageView mStartButton                      = null;
     private boolean mButtonScreenShowing                 = false;
+    private boolean mWebScreenShowing                 = false;
 
     
   //button view
@@ -960,6 +964,19 @@ public class VideoPlayback extends Activity
 //		Log.i("timer_action","timer_action : END : " + trackable_id );
 	}
 	
+	private void akcjaWWW( String url ){
+//		setupWebScreen();
+//		WebView myWebView = (WebView) findViewById(R.id.wvWeb);
+//		myWebView.loadUrl(url);
+//		showWebScreen();
+	
+	    Intent i = new Intent(Intent.ACTION_VIEW);
+	    i.setData(Uri.parse(url));
+	    startActivity(i);
+		    
+	}
+	
+	
 	private void showHideButtons() throws JSONException{
 		ukryjWszystkieButtonki();
 		int aktywny = 0;
@@ -990,6 +1007,9 @@ public class VideoPlayback extends Activity
 					String action = minfo.getString("action");
 					Log.i("button clicked", "button_clicked: action:" + action + 
 							" znacznik_id:" + Integer.toString(znacznik_id));
+					if ( znacznik_id == 1 ){
+						akcjaWWW(action);
+					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1762,6 +1782,45 @@ public class VideoPlayback extends Activity
             mButtonScreenShowing = false;
         }
     }
+    
+    
+    private void setupWebScreen()
+    {
+        // Inflate the view from the xml file:
+    	Log.i("setupWebScreen", "setupWebScreen: "+ mWebView );
+    	if ( mWebView == null ){
+    		mWebView = getLayoutInflater().inflate( R.layout.web_view, null);
+	
+	        // Add it to the content view:
+	        addContentView(mWebView, new LayoutParams(
+	                LayoutParams.MATCH_PARENT,
+	                LayoutParams.MATCH_PARENT));
+	
+	//        this.setupTutorialButton();
+    	}
+    	mWebScreenShowing = true;
+    }
+    
+    private void showWebScreen()
+    {
+    	Log.i("showWebScreen","showWebScreen");
+        if (mWebView != null)
+        {
+            mWebView.setVisibility(View.VISIBLE);
+            mWebScreenShowing = true;
+        }
+    }
+    /** Hide the startup screen */
+    private void hideWebScreen()
+    {
+        if (mWebView != null)
+        {
+            mWebView.setVisibility(View.INVISIBLE);
+            mWebScreenShowing = false;
+        }
+    }
+    
+    
     /** TUTORIAL END */
      
     
@@ -1794,12 +1853,16 @@ public class VideoPlayback extends Activity
 
 //        // If this is the first time the back button is pressed
 //        // show the StartupScreen and pause all media:
-        if (mButtonScreenShowing)
-        {
+    	if (mWebScreenShowing) {
+        	hideWebScreen();
+        	return;
+        }
+    	if (mButtonScreenShowing) {
         	hideButtonsScreen();
         	return;
         }
-        
+    	
+    	
 //            // Show the startup screen:
 //            showStartupScreen();
 //
