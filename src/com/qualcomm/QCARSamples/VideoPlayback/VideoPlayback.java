@@ -167,12 +167,11 @@ public class VideoPlayback extends Activity
     // The StartupScreen view and the start button:
     private View mStartupView                           = null;
     private ImageView mStartButton                      = null;
-    private boolean mStartScreenShowing                 = false;
+    private boolean mButtonScreenShowing                 = false;
 
     
   //button view
     private View mButtonView                           = null;
-    private boolean mButtonScreenShowing                 = false;
     
   //button view
     private ButtonsView mButtonView2                           = null;
@@ -529,7 +528,7 @@ public class VideoPlayback extends Activity
             public boolean onDoubleTap(MotionEvent e)
             {
                 // Do not react if the StartupScreen is being displayed:
-                if (mStartScreenShowing)
+                if (mButtonScreenShowing)
                     return false;
 
                 for (int i = 0; i < NUM_TARGETS; i++)
@@ -568,7 +567,7 @@ public class VideoPlayback extends Activity
             public boolean onSingleTapConfirmed(MotionEvent e)
             {
                 // Do not react if the StartupScreen is being displayed
-                if (mStartScreenShowing)
+                if (mButtonScreenShowing)
                     return false;
 
                 for (int i = 0; i < NUM_TARGETS; i++)
@@ -1669,7 +1668,7 @@ public class VideoPlayback extends Activity
 	
 	//        this.setupTutorialButton();
     	}
-    	mStartScreenShowing = true;
+    	mButtonScreenShowing = true;
     }
     
     private void showButtonsScreen()
@@ -1678,7 +1677,7 @@ public class VideoPlayback extends Activity
         if (mStartupView != null)
         {
             mStartupView.setVisibility(View.VISIBLE);
-            mStartScreenShowing = true;
+            mButtonScreenShowing = true;
         }
     }
     /** Hide the startup screen */
@@ -1687,7 +1686,7 @@ public class VideoPlayback extends Activity
         if (mStartupView != null)
         {
             mStartupView.setVisibility(View.INVISIBLE);
-            mStartScreenShowing = false;
+            mButtonScreenShowing = false;
         }
     }
     /** TUTORIAL END */
@@ -1722,8 +1721,12 @@ public class VideoPlayback extends Activity
 
 //        // If this is the first time the back button is pressed
 //        // show the StartupScreen and pause all media:
-//        if (!mStartScreenShowing)
-//        {
+        if (mButtonScreenShowing)
+        {
+        	hideButtonsScreen();
+        	return;
+        }
+        
 //            // Show the startup screen:
 //            showStartupScreen();
 //

@@ -79,7 +79,7 @@ public final class R {
         public static final int ibIntro6=0x7f050008;
         public static final int ibKameraLogo=0x7f050027;
         public static final int ibPlayPause=0x7f050009;
-        public static final int ibTutorial=0x7f05002e;
+        public static final int ibTutorial=0x7f05002d;
         public static final int ivGalleryActiveImg=0x7f050013;
         public static final int libName=0x7f050021;
         public static final int libNext=0x7f050023;
@@ -100,13 +100,13 @@ public final class R {
         public static final int rlMapaContainer=0x7f050018;
         public static final int rlTopBar=0x7f050002;
         public static final int rlTouchToGo=0x7f050001;
-        public static final int rlTutorial=0x7f05002d;
+        public static final int rlTutorial=0x7f05002c;
         public static final int start_button=0x7f050029;
         public static final int surface_view=0x7f05000f;
-        public static final int textView1=0x7f05002c;
+        public static final int textView1=0x7f05002f;
         public static final int textViewLibrary=0x7f050020;
         public static final int topbarTopic=0x7f05000d;
-        public static final int tutorialTouch=0x7f05002f;
+        public static final int tutorialTouch=0x7f05002e;
         public static final int tvKameraInfo=0x7f05001b;
         public static final int tvWybranyNumer=0x7f050025;
         public static final int wvMapa=0x7f050019;
