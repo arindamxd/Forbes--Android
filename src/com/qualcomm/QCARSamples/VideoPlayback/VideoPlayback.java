@@ -30,7 +30,12 @@ then you may not retain or use any of the Sample Code in any manner.
 
 package com.qualcomm.QCARSamples.VideoPlayback;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -53,6 +58,9 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -63,6 +71,7 @@ import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -74,9 +83,13 @@ import android.view.MotionEvent;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
 import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
+
 
 import com.qualcomm.QCARSamples.VideoPlayback.Slownik;
 import com.qualcomm.QCAR.QCAR;
@@ -121,6 +134,17 @@ public class VideoPlayback extends Activity
     // Pointer to the current activity:
     private Activity mCurrentActivity                   = null;
 
+    
+//    public DownloadAndShowImageTask _dTask;
+//    public OpenMapaTask _mapaTask;
+	private ArrayList<String> galleryUrls;
+	private ArrayList<String> galleryUrlsSmall,galleryUrls480,galleryUrlsOrginal, galleryTitles;
+	private ArrayList<String> galleryUrlsMedium;
+	private ArrayList<String> galleryUrlsLarge;
+	private int galleryid;
+	private int gd_id;
+	
+	
     public DB oDB;
     private JSONArray json_trackers_data, all_trackablesdir_by_k_active, json_marker_trackers_data, json_audio_trackers_data, json_globalna_tablica_dirs;
     private ArrayList<JSONObject> json_tracker_active_data_arrlist, json_buttons_for_tracker;
@@ -159,9 +183,11 @@ public class VideoPlayback extends Activity
     // The StartupScreen view and the start button:
     private View mStartupView                           = null;
     private View mWebView                           = null;
+    private View mGalleryView                           = null;
     private ImageView mStartButton                      = null;
     private boolean mButtonScreenShowing                 = false;
     private boolean mWebScreenShowing                 = false;
+    private boolean mGalleryScreenShowing                 = false;
 
     
   //button view
@@ -216,6 +242,9 @@ public class VideoPlayback extends Activity
     private Vector<Texture> mTextures;
     private int mSplashScreenImageResource = 0;
     
+
+    public DownloadAndShowImageTask _dTask;
+    
     // Current focus mode:
     private int mFocusMode;
 
@@ -226,12 +255,87 @@ public class VideoPlayback extends Activity
         loadLibrary(NATIVE_LIB_SAMPLE);
     }
 
+    
+    
+    /**
+     * sub-class of AsyncTask
+     */
+    private class DownloadAndShowImageTask extends AsyncTask<URL, Integer, Bitmap> {	
+        protected Bitmap doInBackground(URL... urls) {
+        	Bitmap bmp = null;
+        	URLConnection conn;
+			try {
+				conn = urls[0].openConnection();
+	            conn.connect(); 
+	            InputStream is = conn.getInputStream(); 
+	            BufferedInputStream bis = new BufferedInputStream(is, 8192); 
+	            Log.i("BufferedInputStream return: ", bis.toString() );
+	            bmp = BitmapFactory.decodeStream(bis);
+//	            Log.i("BitmapFactory.decodeStream(bis) return: ", bmp.toString() );
+	            bis.close(); 
+	            is.close(); 
+	            return bmp;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return bmp;	
+        }
+     // -- gets called just before thread begins
+        @Override
+        protected void onPreExecute() 
+        {
+                Log.i( "makemachine", "onPreExecute()" );
+                ImageView loadingGalery = ( ImageView ) findViewById( R.id.loadingGalery );
+                loadingGalery.setVisibility( View.VISIBLE );
+                super.onPreExecute();     
+        }
+        
+        // -- called from the publish progress 
+        // -- notice that the datatype of the second param gets passed to this method
+        @Override
+        protected void onProgressUpdate(Integer... values) 
+        {
+        	Log.i( "makemachine", "onProgressUpdate(): ");
+                super.onProgressUpdate(values);
+        }
+        
+        // -- called if the cancel button is pressed
+        @Override
+        protected void onCancelled()
+        {
+                super.onCancelled();
+                Log.i( "makemachine", "onCancelled()" );
+        }
+
+        // -- called as soon as doInBackground method completes
+        // -- notice that the third param gets passed to this method
+        @Override
+        protected void onPostExecute( Bitmap bmp ) 
+        {
+                super.onPostExecute(bmp);
+               // Log.i( "makemachine", "onPostExecute(): ");
+                ImageView loadingGalery = ( ImageView ) findViewById( R.id.loadingGalery );
+                loadingGalery.setVisibility( View.INVISIBLE );
+                ImageView ivGalleryActiveImg = (ImageView) findViewById(R.id.ivGalleryActiveImg);
+                ivGalleryActiveImg.setImageBitmap( bmp  );    
+                TextView tvTopbarTopic = (TextView) findViewById(R.id.topbarTopic);
+//        		tvTopbarTopic.setText( galleryTitles.get(galleryid) );
+        }   
+    }
+    
+    
     /** An async task to initialize QCAR asynchronously. */
     private class InitQCARTask extends AsyncTask<Void, Integer, Boolean>
     {
         // Initialize with invalid value:
         private int mProgressValue = -1;
 
+        
+        
+        
+        
         protected Boolean doInBackground(Void... params)
         {
             // Prevent the onDestroy() method to overlap with initialization:
@@ -690,6 +794,37 @@ public class VideoPlayback extends Activity
 	    
     }
     
+    
+
+    public void get_media_for_gallery( Integer gd_id ){	
+    	try {
+    		Log.i( "getmedia", "---------------- getMedia : start : " + gd_id.toString() );
+    		String url = BASE_URL + "/index.php/ajax/Common/Media/get_media_simple_galery?gd_id="+gd_id.toString() ;
+    		this.json_media_data = this.makeHttpRequest(url, "GET", nvp);
+    		
+//    		Log.i( "gettracker url", url );    		
+//    		this.json_trackers_data = this.makeHttpRequest(url, "GET", nvp);
+    		Log.i( "getmedia", "++++++++++++++++"+Integer.toString( this.json_media_data.length()) );
+    		Log.i( "get_media_for_gallery", "---------------- get_media_for_gallery: end" );
+    		
+    		
+    	}
+    	catch (Exception e) {
+    		AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
+    	    dlgAlert.setMessage("Unable to connect with media server. Check Internet connection.");
+    	    dlgAlert.setTitle("INTERNET CONNECTION PROBLEM");
+    	    dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                	System.exit(0);
+                }
+            } );
+    	    dlgAlert.setCancelable(false);
+    	    dlgAlert.create().show();
+		}
+    }
+    
+    
+    
     public void get_trackers(){	
     	try {
     		JSONObject last = (JSONObject) this.json_globalna_tablica_dirs.get( json_globalna_tablica_dirs.length()-1 );
@@ -964,6 +1099,199 @@ public class VideoPlayback extends Activity
 //		Log.i("timer_action","timer_action : END : " + trackable_id );
 	}
 	
+
+
+    
+    
+    public Boolean actionGaleria( int gdx_id ){
+    	hideButtonsScreen();
+    	setupGalleryScreen();
+    	showGalleryScreen();
+    	
+    	gd_id=gdx_id;
+		galleryid = 0;
+		galleryUrls = new ArrayList<String>(); 
+		galleryUrlsOrginal = new ArrayList<String>(); 
+    	galleryUrlsSmall = new ArrayList<String>();  
+    	galleryUrls480 = new ArrayList<String>(); 
+    	galleryUrlsMedium = new ArrayList<String>(); 
+    	galleryUrlsLarge = new ArrayList<String>(); 
+    	galleryTitles = new ArrayList<String>();
+    	get_media_for_gallery(gd_id);
+    	Log.i( "actionGaleria", "actionGaleria: num of imgs: " + Integer.toString(json_media_data.length() ) );	
+		try {
+			for ( int i=0; i < json_media_data.length(); i++ ){
+        		// szukamy id w t_id
+				
+				JSONObject wiersz = (JSONObject) json_media_data.get(i);
+				Log.i("---->", wiersz.toString() );
+	        	galleryUrlsOrginal.add( wiersz.getString("img_original"));
+				galleryUrlsSmall.add( wiersz.getString("img_small"));
+				galleryUrls480.add( wiersz.getString("img_normal"));
+				galleryUrlsMedium.add( wiersz.getString("img_medium"));
+				galleryUrlsLarge.add( wiersz.getString("img_large"));
+				galleryTitles.add( wiersz.getString("tytul"));
+				Log.i("---->", wiersz.toString() );
+        	}
+        		
+    	} catch (JSONException e) {
+			Test(e.toString(), "error309");
+		}
+    	
+    	if ( galleryUrlsSmall.size() > 0 ){
+            try { 
+            	Log.i( "getmedia", "--------kjkjhkjhkh- " );
+            	URL aURL = new URL(get_correct_size_gallery_img()); 
+            	Log.i( "getmedia:::::", get_correct_size_gallery_img() );
+				_dTask = new DownloadAndShowImageTask();
+				_dTask.execute( aURL );
+           } catch (IOException e) { 
+           } 
+//           
+    		galleryButtonsInitialization();
+//    		//pokaz okana
+//
+//    		
+    		
+    		
+    		return true;
+    	}
+    	else{
+    		Test("Brak zdjec dla tego obiektu", "PRZEPRASZAMY");
+    		return false;
+    	}
+		
+//		return false;
+	}
+    
+    
+    private String get_correct_size_gallery_img(){
+		RelativeLayout rlGaleryContainer = (RelativeLayout) findViewById(R.id.rlGaleryContainer);
+		int gallery_height = rlGaleryContainer.getHeight();
+		Display display = getWindowManager().getDefaultDisplay();
+//		Point size = new Point();
+//		display.getWÊ(size);
+		int min_size = display.getWidth() < display.getHeight() ? display.getWidth() : display.getHeight();
+		
+		
+		Log.i("GALERRY HEIGHT =====>", Integer.toString( gallery_height ) );
+		
+		Log.i("GALERRY HEIGHT =====>", Integer.toString( min_size ) );
+		gallery_height = min_size;
+		if ( gallery_height <= 400){
+			galleryUrls = galleryUrlsSmall;
+			//sprawdz czy istnieje small
+			if ( galleryUrlsSmall.get(galleryid) != "null" ){
+				gallery_img_url = galleryUrlsSmall.get(galleryid);
+			}
+			else{
+				gallery_img_url = galleryUrlsOrginal.get(galleryid);
+			}
+		}
+		else if( gallery_height <= 500){
+			galleryUrls = galleryUrls480;
+			//sprawdz czy istnieje small
+			if ( galleryUrls480.get(galleryid) != "null" ){
+				gallery_img_url = galleryUrls480.get(galleryid);
+			}
+			else{
+				gallery_img_url = galleryUrlsOrginal.get(galleryid);
+			}
+		}
+		else if( gallery_height <= 600){
+			galleryUrls = galleryUrlsMedium;
+			//sprawdz czy istnieje small
+			if ( galleryUrlsMedium.get(galleryid) != "null" ){
+				gallery_img_url = galleryUrlsMedium.get(galleryid);
+			}
+			else{
+				gallery_img_url = galleryUrlsOrginal.get(galleryid);
+			}
+		}
+		else if( gallery_height <= 800){
+			galleryUrls = galleryUrlsLarge;
+			//sprawdz czy istnieje small
+			if ( galleryUrlsLarge.get(galleryid) != "null" ){
+				gallery_img_url = galleryUrlsLarge.get(galleryid);
+			}
+			else{
+				gallery_img_url = galleryUrlsOrginal.get(galleryid);
+			}
+		}
+		else{
+			gallery_img_url = galleryUrlsOrginal.get(galleryid);
+		}
+		
+		
+		Log.i("RETURN galleryUrlsMedium.get(galleryid)", gallery_img_url );
+		return gallery_img_url;
+	}
+    
+    
+private void galleryButtonsInitialization(){
+		
+		final Button galleryPrevButton = (Button) findViewById(R.id.galleryPrev);
+		final Button galleryNextButton = (Button) findViewById(R.id.galleryNext);
+		galleryNextButton.setVisibility( View.VISIBLE );
+		galleryPrevButton.setVisibility( View.VISIBLE );
+		
+		if ( galleryid == 0 ){
+			galleryPrevButton.setVisibility( View.INVISIBLE );
+		}
+		if ( galleryUrls.size() <= 1 ){
+			galleryNextButton.setVisibility( View.INVISIBLE );
+			galleryPrevButton.setVisibility( View.INVISIBLE );
+			
+		}
+    	
+		galleryPrevButton.setWidth(0);//dla 3.1 ? to i tak nic nie daje ale dzki tem udziala ?
+		galleryPrevButton.setOnClickListener(new View.OnClickListener() {
+          public void onClick(View v) {
+        	  galleryNextButton.setVisibility( View.VISIBLE );
+        	  galleryid--;
+        	  
+        	  if ( galleryid > 0 ){
+        		  galleryPrevButton.setVisibility( View.VISIBLE );
+        	  }
+        	  else{
+        		  galleryid = 0;
+        		  galleryPrevButton.setVisibility( View.INVISIBLE );
+        	  }
+        	  
+              try { 
+            	 URL aURL = new URL(get_correct_size_gallery_img()); 
+				_dTask = new DownloadAndShowImageTask();
+				_dTask.execute( aURL ); 
+             } catch (IOException e) { 
+             } 
+          }
+        });
+    		
+    	galleryNextButton.setWidth(0);//dla 3.1 ? to i tak nic nie daje ale dzki tem udziala ?
+    	galleryNextButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				galleryid++;
+				galleryPrevButton.setVisibility( View.VISIBLE ); 
+			  
+				if ( galleryid < galleryUrls.size()-1 ){
+					galleryNextButton.setVisibility( View.VISIBLE );
+				}
+				else{
+					galleryid = galleryUrls.size()-1;
+					galleryNextButton.setVisibility( View.INVISIBLE ); 
+				}
+			                 	                   	  
+				try { 
+					URL aURL = new URL(get_correct_size_gallery_img()); 
+					_dTask = new DownloadAndShowImageTask();
+					_dTask.execute( aURL );
+				} catch (IOException e) { 
+//			         Log.e(TAG, "Error getting bitmap", e); 
+				} 
+			}
+		});
+	}
+	
 	private void akcjaWWW( String url ){
 //		setupWebScreen();
 //		WebView myWebView = (WebView) findViewById(R.id.wvWeb);
@@ -975,6 +1303,8 @@ public class VideoPlayback extends Activity
 	    startActivity(i);
 		    
 	}
+	
+	
 	
 	
 	private void showHideButtons() throws JSONException{
@@ -1009,6 +1339,9 @@ public class VideoPlayback extends Activity
 							" znacznik_id:" + Integer.toString(znacznik_id));
 					if ( znacznik_id == 1 ){
 						akcjaWWW(action);
+					}
+					else if ( znacznik_id == 3 ){
+						actionGaleria(Integer.parseInt(action));
 					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -1316,7 +1649,7 @@ public class VideoPlayback extends Activity
         {
             for (int i = 0; i < NUM_TARGETS; i++)
             {
-            	Log.i("VP", "1105!!!!!!!!!!!!!!!");
+//            	Log.i("VP", "1105!!!!!!!!!!!!!!!");
                 if (!mReturningFromFullScreen)
                 {
                     mRenderer.requestLoad(
@@ -1784,41 +2117,49 @@ public class VideoPlayback extends Activity
     }
     
     
-    private void setupWebScreen()
-    {
-        // Inflate the view from the xml file:
-    	Log.i("setupWebScreen", "setupWebScreen: "+ mWebView );
+    private void setupWebScreen() {
     	if ( mWebView == null ){
     		mWebView = getLayoutInflater().inflate( R.layout.web_view, null);
-	
-	        // Add it to the content view:
-	        addContentView(mWebView, new LayoutParams(
-	                LayoutParams.MATCH_PARENT,
-	                LayoutParams.MATCH_PARENT));
-	
-	//        this.setupTutorialButton();
+	        addContentView(mWebView, new LayoutParams( LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
     	}
     	mWebScreenShowing = true;
     }
-    
-    private void showWebScreen()
-    {
+    private void showWebScreen()  {
     	Log.i("showWebScreen","showWebScreen");
-        if (mWebView != null)
-        {
+        if (mWebView != null)  {
             mWebView.setVisibility(View.VISIBLE);
             mWebScreenShowing = true;
         }
     }
-    /** Hide the startup screen */
-    private void hideWebScreen()
-    {
-        if (mWebView != null)
-        {
+    private void hideWebScreen()   {
+        if (mWebView != null) {
             mWebView.setVisibility(View.INVISIBLE);
             mWebScreenShowing = false;
         }
     }
+    
+
+    private void setupGalleryScreen() {
+    	if ( mGalleryView == null ){
+    		mGalleryView = getLayoutInflater().inflate( R.layout.gallery_view, null);
+	        addContentView(mGalleryView, new LayoutParams( LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+    	}
+    	mGalleryScreenShowing = true;
+    }
+    private void showGalleryScreen()  {
+    	Log.i("showWebScreen","showWebScreen");
+        if (mGalleryView != null)  {
+        	mGalleryView.setVisibility(View.VISIBLE);
+            mGalleryScreenShowing = true;
+        }
+    }
+    private void hideGalleryScreen()   {
+        if (mGalleryView != null) {
+        	mGalleryView.setVisibility(View.INVISIBLE);
+        	mGalleryScreenShowing = false;
+        }
+    }
+    
     
     
     /** TUTORIAL END */
@@ -1853,6 +2194,11 @@ public class VideoPlayback extends Activity
 
 //        // If this is the first time the back button is pressed
 //        // show the StartupScreen and pause all media:
+    	if (mGalleryScreenShowing) {
+        	hideGalleryScreen();
+        	showButtonsScreen();
+        	return;
+        }
     	if (mWebScreenShowing) {
         	hideWebScreen();
         	return;
