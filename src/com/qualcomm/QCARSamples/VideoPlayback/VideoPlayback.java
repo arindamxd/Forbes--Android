@@ -43,11 +43,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.R.bool;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
-import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -61,7 +59,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -75,18 +72,11 @@ import android.view.MotionEvent;
 
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
-//
-//import com.ARFixer.PARplus.DB;
-//import com.ARFixer.PARplus.Logs;
-//import com.ARFixer.PARplus.Texture;
-//import com.ARFixer.PARplus.DB;
-//import com.ARFixer.PARplus.Downloader;
+
+import com.qualcomm.QCARSamples.VideoPlayback.Slownik;
 import com.qualcomm.QCAR.QCAR;
 import com.qualcomm.QCARSamples.VideoPlayback.VideoPlayerHelper.MEDIA_STATE;
 import com.qualcomm.QCARSamples.VideoPlayback.ButtonsView;
@@ -941,6 +931,13 @@ public class VideoPlayback extends Activity
 						runOnUiThread(new Runnable() {
 						     public void run() {
 						    	 setupButtonsScreen();
+						    	 try {
+									setButtonsForCurrentTrackable();
+									showHideButtons();
+								} catch (JSONException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 						    	 Log.i("++++++++++++++++++++++++++++", "++++++++++++++++++++++++++++");
 						    	 showButtonsScreen();
 						//stuff that updates ui
@@ -950,7 +947,7 @@ public class VideoPlayback extends Activity
 						
 					}
 					
-					setButtonsForCurrentTrackable();
+					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -963,6 +960,82 @@ public class VideoPlayback extends Activity
 //		Log.i("timer_action","timer_action : END : " + trackable_id );
 	}
 	
+	private void showHideButtons() throws JSONException{
+		ukryjWszystkieButtonki();
+		int aktywny = 0;
+		for(int i=0; i<json_buttons_for_tracker.size(); i++ ){
+			JSONObject guzik = json_buttons_for_tracker.get(i);
+			if( guzik.getInt("is_active") == 1 ){
+				aktywny++;
+				ImageButton ib = returnCorrectButton(aktywny);
+				int r_drawable_id = Slownik.getActiveDrawableForButton(guzik.getInt("typ_g_id"));
+				setButtonInterfaceActive(guzik, ib, r_drawable_id)
+;				Log.i("guzik", "guzik " + i + ": " + guzik.toString() );
+			}
+		}
+	}
+	
+	private void setButtonInterfaceActive(JSONObject minfo, ImageButton ib, int D_id) {
+		setBgButton(ib, D_id);
+		ib.setVisibility(View.VISIBLE);
+		setButtonActionOnClick(minfo, ib);
+	}
+	
+	public void setButtonActionOnClick(final JSONObject minfo, ImageButton btn) {
+		btn.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				int znacznik_id;
+				try {
+					znacznik_id = minfo.getInt("znacznik_id");
+					String action = minfo.getString("action");
+					Log.i("button clicked", "button_clicked: action:" + action + 
+							" znacznik_id:" + Integer.toString(znacznik_id));
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+//				Message message = getMessageForButton(minfo);
+//				Log.i("message.what", Integer.toString(message.what));
+//				Log.i("message.obj", message.obj.toString());
+//				Main.sendThreadSafeGUIMessage(message);
+			}
+		});
+	}
+	public void setBgButton(ImageButton btn, int rid) {
+		btn.setBackgroundDrawable(getResources().getDrawable(rid));
+	}
+
+	private ImageButton returnCorrectButton( int num ){
+		switch ( num ){
+			case 1:  return (ImageButton) findViewById(R.id.ibIntro1); 
+			case 2:  return (ImageButton) findViewById(R.id.ibIntro2); 
+			case 3:  return (ImageButton) findViewById(R.id.ibIntro3); 
+			case 4:  return (ImageButton) findViewById(R.id.ibIntro4); 
+			case 5:  return (ImageButton) findViewById(R.id.ibIntro5); 
+			case 6:  return (ImageButton) findViewById(R.id.ibIntro6); 
+			default: return null; 
+		}
+	}
+	
+	public void ukryjWszystkieButtonki() {
+		Log.i("ukryjWszystkieButtonki", "ukryjWszystkieButtonki");
+		ImageButton ibIntro1 = (ImageButton) findViewById(R.id.ibIntro1);
+		ibIntro1.setVisibility(View.INVISIBLE);
+		ImageButton ibIntro2 = (ImageButton) findViewById(R.id.ibIntro2);
+		ibIntro2.setVisibility(View.INVISIBLE);
+		ImageButton ibIntro3 = (ImageButton) findViewById(R.id.ibIntro3);
+		ibIntro3.setVisibility(View.INVISIBLE);
+		ImageButton ibIntro4 = (ImageButton) findViewById(R.id.ibIntro4);
+		ibIntro4.setVisibility(View.INVISIBLE);
+		ImageButton ibIntro5 = (ImageButton) findViewById(R.id.ibIntro5);
+		ibIntro5.setVisibility(View.INVISIBLE);
+		ImageButton ibIntro6 = (ImageButton) findViewById(R.id.ibIntro6);
+		ibIntro6.setVisibility(View.INVISIBLE);
+		
+		
+	}	
+
+
 	private void setCurrentTrackableData() throws JSONException{
 		json_tracker_active_data = new JSONObject();
 //		if (this.json_marker_trackers_data.length() > 0 )

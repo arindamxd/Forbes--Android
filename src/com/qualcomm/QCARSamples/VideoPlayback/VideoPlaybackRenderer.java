@@ -183,7 +183,7 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
     	
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         String val = preferences.getString(key, null); 
-        Log.i("getDefaults", "getDefaults seting: " + key + " value: " + val );
+        //Log.i("getDefaults", "getDefaults seting: " + key + " value: " + val );
     	return val;
     }
     
