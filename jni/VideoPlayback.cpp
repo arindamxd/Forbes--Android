@@ -56,7 +56,7 @@ enum MEDIA_STATE {
     ERROR                               =  6
 };
 
-static const int NUM_TARGETS = 20;
+static const int NUM_TARGETS = 30;
 
 MEDIA_STATE currentStatus[NUM_TARGETS];
 

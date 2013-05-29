@@ -746,8 +746,11 @@ public class VideoPlayerHelper implements OnPreparedListener,
     public void getSurfaceTextureTransformMatrix(float []mtx)
     {
         mSurfaceTextureLock.lock();
-            if (mSurfaceTexture != null)
+            if (mSurfaceTexture != null){
                 mSurfaceTexture.getTransformMatrix(mtx);
+//                Log.i("getSurfaceTextureTransformMatrix", 
+//                		"getSurfaceTextureTransformMatrix: " + Integer.toString(mtx.length)+ ", "  + Float.toString(mtx[0])+ ", " + Float.toString(mtx[1])+ ", " + Float.toString(mtx[2]) );
+            }
         mSurfaceTextureLock.unlock();
     }
 

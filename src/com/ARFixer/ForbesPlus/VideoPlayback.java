@@ -170,7 +170,7 @@ public class VideoPlayback extends Activity
 
     
     // Movie for the Targets:
-    public static final int NUM_TARGETS                 = 20;
+    public static final int NUM_TARGETS                 = 30;
     public static final int STONES                      = 0;
     public static final int CHIPS                       = 1;
     private VideoPlayerHelper mVideoPlayerHelper[]      = null;

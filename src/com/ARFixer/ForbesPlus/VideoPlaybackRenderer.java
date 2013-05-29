@@ -171,7 +171,7 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
     
     
     public static void setDefaults(String key, String value, Context context) {
-    	Log.i("setDefaults", "setDefaults seting: " + key + " value: " + value );
+//    	Log.i("setDefaults", "setDefaults seting: " + key + " value: " + value );
     	
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
@@ -270,7 +270,7 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
     {
         if (!mIsActive)
             return;
-
+//VideoPlayback.NUM_TARGETS;
         for (int i = 0; i < VideoPlayback.NUM_TARGETS; i++)
         {
             if (mVideoPlayerHelper[i] != null)
@@ -286,7 +286,15 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
                     // According to the Android API (http://developer.android.com/reference/android/graphics/SurfaceTexture.html)
                     // transforming the texture coordinates needs to happen every frame.
                     mVideoPlayerHelper[i].getSurfaceTextureTransformMatrix(mTexCoordTransformationMatrix[i]);
-                    setVideoDimensions(i, mVideoPlayerHelper[i].getVideoWidth(), mVideoPlayerHelper[i].getVideoHeight(), mTexCoordTransformationMatrix[i]);
+            
+                    
+//                    if ( i == 25 ){
+                    if (mVideoPlayerHelper[i].getStatus() == MEDIA_STATE.PLAYING)
+                    setVideoDimensions(i, 
+                    		mVideoPlayerHelper[i].getVideoWidth(), 
+                    		mVideoPlayerHelper[i].getVideoHeight(), 
+                    		mTexCoordTransformationMatrix[i]);
+//                    }
                 }
 
                 setStatus(i, mVideoPlayerHelper[i].getStatus().getNumericType());
