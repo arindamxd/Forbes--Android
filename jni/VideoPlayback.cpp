@@ -42,6 +42,8 @@ Texture** textures                      =  0;
 
 int emt_id = 0;
 
+//qualcomm.QCARSamples.VideoPlayback
+
 // Please mind that these values are the same for both Java and native
 // See: src/com/qualcomm/QCARSamples/VideoPlayback/VideoPlayerHelper.java
 enum MEDIA_STATE {
@@ -130,7 +132,7 @@ QCAR::Matrix44F inverseProjMatrix;
 QCAR::Matrix44F modelViewMatrix[NUM_TARGETS];
 
 JNIEXPORT int JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_getOpenGlEsVersionNative(JNIEnv *, jobject)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_getOpenGlEsVersionNative(JNIEnv *, jobject)
 {
     // We only use OpenGL ES 2.0
     return 2;
@@ -138,7 +140,7 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_getOpenGlEsVersionNati
 
 
 JNIEXPORT int JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_getCurrentTid(JNIEnv *, jobject)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_getCurrentTid(JNIEnv *, jobject)
 {
     // We only use OpenGL ES 2.0
 	LOG("sFDSFSDFDSFASDFDSFASDFSFADSFSDFADSFSDFDSAFSFSDF");
@@ -149,7 +151,7 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_getCurrentTid(JNIEnv *
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_setActivityPortraitMode(JNIEnv *, jobject, jboolean isPortrait)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_setActivityPortraitMode(JNIEnv *, jobject, jboolean isPortrait)
 {
     isActivityInPortraitMode = isPortrait;
 }
@@ -160,16 +162,13 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_setActivityPortraitMod
 
 //activate
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_loadActive(JNIEnv *env, jobject obj, jstring dupa)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_loadActive(JNIEnv *env, jobject obj, jstring dupa)
 {
 
 	const char* nativedupa = env->GetStringUTFChars(dupa,0);
    // use your string
    //("loadActive nativedupa:");
   // LOG( nativedupa );
-
-
-
 
        // Get the image tracker:
        QCAR::TrackerManager& trackerManager = QCAR::TrackerManager::getInstance();
@@ -239,9 +238,9 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_loadActive(JNIEnv *env
 
 
 JNIEXPORT int JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_initTracker(JNIEnv *, jobject)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_initTracker(JNIEnv *, jobject)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_initTracker");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_initTracker");
 
     // Initialize the image tracker:
     QCAR::TrackerManager& trackerManager = QCAR::TrackerManager::getInstance();
@@ -265,9 +264,9 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_initTracker(JNIEnv *, 
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_deinitTracker(JNIEnv *, jobject)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_deinitTracker(JNIEnv *, jobject)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_deinitTracker");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_deinitTracker");
 
     // Deinit the image tracker:
     QCAR::TrackerManager& trackerManager = QCAR::TrackerManager::getInstance();
@@ -276,9 +275,9 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_deinitTracker(JNIEnv *
 
 
 JNIEXPORT int JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_loadTrackerData(JNIEnv *, jobject)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_loadTrackerData(JNIEnv *, jobject)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_loadTrackerData");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_loadTrackerData");
 
     // Get the image tracker:
     QCAR::TrackerManager& trackerManager = QCAR::TrackerManager::getInstance();
@@ -319,9 +318,9 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_loadTrackerData(JNIEnv
 
 
 JNIEXPORT int JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_destroyTrackerData(JNIEnv *, jobject)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_destroyTrackerData(JNIEnv *, jobject)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_destroyTrackerData");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_destroyTrackerData");
 
     // Get the image tracker:
     QCAR::TrackerManager& trackerManager = QCAR::TrackerManager::getInstance();
@@ -359,20 +358,20 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_destroyTrackerData(JNI
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_onQCARInitializedNative(JNIEnv *, jobject)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_onQCARInitializedNative(JNIEnv *, jobject)
 {
      QCAR::setHint(QCAR::HINT_MAX_SIMULTANEOUS_IMAGE_TARGETS, 2);
 }
 
 JNIEXPORT jint JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_getVideoTextureID(JNIEnv* env, jobject obj, jint target )
+Java_com_ARFixer_ForbesPlus_VideoPlaybackRenderer_getVideoTextureID(JNIEnv* env, jobject obj, jint target )
 {
     // Return the texture for the video playback created in native
     return videoPlaybackTextureID[target];
 }
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_setStatus(JNIEnv* env, jobject obj, jint target, jint value)
+Java_com_ARFixer_ForbesPlus_VideoPlaybackRenderer_setStatus(JNIEnv* env, jobject obj, jint target, jint value)
 {
     // Transform the value passed from java to our own values
     switch (value)
@@ -389,9 +388,9 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_setStatus(JNIE
 }
 
 JNIEXPORT bool JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_isTapOnScreenInsideTarget(JNIEnv *env, jobject, jint target, jfloat x, jfloat y)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_isTapOnScreenInsideTarget(JNIEnv *env, jobject, jint target, jfloat x, jfloat y)
 {
-    //LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_isTapOnScreenInsideTarget");
+    //LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_isTapOnScreenInsideTarget");
     // Here we calculate that the touch event is inside the target
     QCAR::Vec3F intersection, lineStart, lineEnd;
 
@@ -420,7 +419,7 @@ void uvMultMat4f(float& transformedU, float& transformedV, float u, float v, flo
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_setVideoDimensions(JNIEnv *env, jobject, jint target, jfloat videoWidth, jfloat videoHeight, jfloatArray textureCoordMatrix)
+Java_com_ARFixer_ForbesPlus_VideoPlaybackRenderer_setVideoDimensions(JNIEnv *env, jobject, jint target, jfloat videoWidth, jfloat videoHeight, jfloatArray textureCoordMatrix)
 {
     // The quad originaly comes as a perfect square, however, the video
     // often has a different aspect ration such as 4:3 or 16:9,
@@ -428,7 +427,7 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_setVideoDimens
     //    1) We can either scale the width (typically up)
     //    2) We can scale the height (typically down)
     // Which one to use is just a matter of preference. This example scales the height down.
-    // (see the render call in Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame)
+    // (see the render call in Java_com_ARFixer_ForbesPlus_VideoPlaybackRenderer_renderFrame)
     videoQuadAspectRatio[target] = videoHeight/videoWidth;
 
     jfloat *mtx = env->GetFloatArrayElements(textureCoordMatrix, 0);
@@ -442,7 +441,7 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_setVideoDimens
 }
 
 JNIEXPORT bool JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_isTracking(JNIEnv *, jobject, jint target)
+Java_com_ARFixer_ForbesPlus_VideoPlaybackRenderer_isTracking(JNIEnv *, jobject, jint target)
 {
     return isTracking[target];
 }
@@ -662,7 +661,7 @@ void renderFrame_renderPlayerIcon( const QCAR::TrackableResult* trackableResult,
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame(JNIEnv * env, jobject obj)
+Java_com_ARFixer_ForbesPlus_VideoPlaybackRenderer_renderFrame(JNIEnv * env, jobject obj)
 {
 
 	// Handle to the activity class:
@@ -852,10 +851,10 @@ configureVideoBackground()
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_initApplicationNative(
+Java_com_ARFixer_ForbesPlus_VideoPlayback_initApplicationNative(
                             JNIEnv* env, jobject obj, jint width, jint height)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_initApplicationNative");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_initApplicationNative");
 
     // Store screen dimensions
     screenWidth = width;
@@ -882,7 +881,7 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_initApplicationNative(
     textures = new Texture*[textureCount];
 
     jmethodID getTextureMethodID = env->GetMethodID(activityClass,
-        "getTexture", "(I)Lcom/qualcomm/QCARSamples/VideoPlayback/Texture;");
+        "getTexture", "(I)Lcom/ARFixer/ForbesPlus/Texture;");
 
     if (getTextureMethodID == 0)
     {
@@ -903,15 +902,15 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_initApplicationNative(
 
         textures[i] = Texture::create(env, textureObject);
     }
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_initApplicationNative finished");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_initApplicationNative finished");
 }
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_deinitApplicationNative(
+Java_com_ARFixer_ForbesPlus_VideoPlayback_deinitApplicationNative(
                                                         JNIEnv* env, jobject obj)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_deinitApplicationNative");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_deinitApplicationNative");
 
     // Release texture resources
     if (textures != 0)
@@ -931,10 +930,10 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_deinitApplicationNativ
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_startCamera(JNIEnv *,
+Java_com_ARFixer_ForbesPlus_VideoPlayback_startCamera(JNIEnv *,
                                                                          jobject)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_startCamera");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_startCamera");
 
     // Initialize the camera:
     if (!QCAR::CameraDevice::getInstance().init())
@@ -964,9 +963,9 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_startCamera(JNIEnv *,
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_stopCamera(JNIEnv *, jobject)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_stopCamera(JNIEnv *, jobject)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_stopCamera");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_stopCamera");
 
     // Stop the tracker:
     QCAR::TrackerManager& trackerManager = QCAR::TrackerManager::getInstance();
@@ -980,9 +979,9 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_stopCamera(JNIEnv *, j
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_setProjectionMatrix(JNIEnv *, jobject)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_setProjectionMatrix(JNIEnv *, jobject)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_setProjectionMatrix");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlayback_setProjectionMatrix");
 
     // Cache the projection matrix:
     const QCAR::CameraCalibration& cameraCalibration =
@@ -994,13 +993,13 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_setProjectionMatrix(JN
 
 
 JNIEXPORT jboolean JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_autofocus(JNIEnv*, jobject)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_autofocus(JNIEnv*, jobject)
 {
     return QCAR::CameraDevice::getInstance().setFocusMode(QCAR::CameraDevice::FOCUS_MODE_TRIGGERAUTO) ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_setFocusMode(JNIEnv*, jobject, jint mode)
+Java_com_ARFixer_ForbesPlus_VideoPlayback_setFocusMode(JNIEnv*, jobject, jint mode)
 {
     int qcarFocusMode;
 
@@ -1031,10 +1030,10 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_setFocusMode(JNIEnv*, 
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_initRendering(
+Java_com_ARFixer_ForbesPlus_VideoPlaybackRenderer_initRendering(
                                                     JNIEnv* env, jobject obj)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_initRendering");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlaybackRenderer_initRendering");
 
     // Define clear color
     glClearColor(0.0f, 0.0f, 0.0f, QCAR::requiresAlpha() ? 0.0f : 1.0f);
@@ -1105,10 +1104,10 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_initRendering(
 
 
 JNIEXPORT void JNICALL
-Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_updateRendering(
+Java_com_ARFixer_ForbesPlus_VideoPlaybackRenderer_updateRendering(
                         JNIEnv* env, jobject obj, jint width, jint height)
 {
-    LOG("Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_updateRendering");
+    LOG("Java_com_ARFixer_ForbesPlus_VideoPlaybackRenderer_updateRendering");
 
     // Update screen dimensions
     screenWidth = width;
