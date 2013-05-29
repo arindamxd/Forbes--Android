@@ -930,7 +930,7 @@ public class VideoPlayback extends Activity
 	public void aktywujClicked( Boolean from_button, String _filename_to_download_active ) {
 		
 		
-		Log.i("------_filename_to_download_active----", _filename_to_download_active );
+	//	Log.i("------_filename_to_download_active----", _filename_to_download_active );
 		if ( _filename_to_download_active.length()>0 ){
 			filename_to_download_active = _filename_to_download_active;
 			
@@ -958,7 +958,8 @@ public class VideoPlayback extends Activity
 		}
 //		rlLoading.setVisibility(View.VISIBLE);
 //		
-		if (dupa("xml") && dupa("dat")) {
+//		if (dupa("xml") && dupa("dat")) {
+	if( true ){ 
 			Log.i("-----------", "DOWNLOADED CORECTLY");
 			activate_library();
 			
@@ -1545,7 +1546,7 @@ private void galleryButtonsInitialization(){
 		get_all_marker_tracker_by_td();
 		mRenderer.setTrackablesData(this.json_trackers_data);
 		get_offline_movies();
-	    download_offline_movies();
+//	    download_offline_movies();
 		 
 		 
   	//pobieramy guziki dla tej biblioteki
@@ -1764,7 +1765,9 @@ private void galleryButtonsInitialization(){
                 else
                 {
                     mRenderer.requestLoad(
-                        i, mMovieName[i], mSeekPosition[i], mWasPlaying[i]);
+                            i, mMovieName[i], mSeekPosition[i], mWasPlaying[i]);
+//                    mRenderer.requestLoad(
+//                            i, mMovieName[i], mSeekPosition[i], true);
                 }
             }
         }

@@ -165,8 +165,8 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_loadActive(JNIEnv *env
 
 	const char* nativedupa = env->GetStringUTFChars(dupa,0);
    // use your string
-   LOG("loadActive nativedupa:");
-   LOG( nativedupa );
+   //("loadActive nativedupa:");
+  // LOG( nativedupa );
 
 
 
@@ -212,8 +212,8 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlayback_loadActive(JNIEnv *env
           }
 
           // Load the data sets:
-//          if (!dataSetStonesAndChips->load("StonesAndChips.xml", QCAR::DataSet::STORAGE_APPRESOURCE))
-          if (!dataSetStonesAndChips->load(nativedupa, QCAR::DataSet::STORAGE_ABSOLUTE))
+          if (!dataSetStonesAndChips->load("StonesAndChips.xml", QCAR::DataSet::STORAGE_APPRESOURCE))
+//          if (!dataSetStonesAndChips->load(nativedupa, QCAR::DataSet::STORAGE_ABSOLUTE))
           {
               LOG("Failed to load data set.");
 //              return 0;
@@ -759,7 +759,7 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame(JN
 			//[self renderBlackSomethingOverMakrer :trackableResult];
 			//[self renderLogoOverMakrer:trackableResult];
 
-			renderFrame_renderStronaBG( trackableResult, currentTarget );
+//			renderFrame_renderStronaBG( trackableResult, currentTarget );
 		}
 		else if ( emt_id == 6 ){
 			//LOG("GALERY ON START" );
@@ -786,7 +786,7 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame(JN
 			}
 
 			renderFrame_renderPlayerIcon( trackableResult, currentTarget );
-			renderFrame_renderStronaBG( trackableResult, currentTarget );
+//			renderFrame_renderStronaBG( trackableResult, currentTarget );
         }
 
         SampleUtils::checkGlError("VideoPlayback renderFrame");

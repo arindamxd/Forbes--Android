@@ -1,20 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="150dp"
+    android:layout_gravity="bottom" >
 
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="138dp"
+        android:layout_gravity="bottom" >
 
-        <ImageView
-            android:id="@+id/start_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@string/startup_button"
-            android:src="@drawable/wydzierka800_480" />
+            <ImageButton
+                android:id="@+id/ibIntro1"
+                android:layout_width="125px"
+                android:layout_height="125px"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="42px"
+                android:layout_marginRight="42px"
+                android:layout_marginBottom="5px"
+                android:background="@drawable/btn_facebook"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/ibIntro2"
+                android:layout_width="125px"
+                android:layout_height="125px"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="42px"
+                android:layout_marginRight="42px"
+                android:layout_marginBottom="5px"
+                android:layout_toRightOf="@+id/ibIntro1"
+                android:background="@drawable/btn_galeria"
+                android:contentDescription="button2"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/ibIntro3"
+                android:layout_width="125px"
+                android:layout_height="125px"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="42px"
+                android:layout_marginRight="42px"
+                android:layout_marginBottom="5px"
+                android:layout_toRightOf="@+id/ibIntro2"
+                android:background="@drawable/btn_audio"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/ibIntro6"
+                android:layout_width="125px"
+                android:layout_height="125px"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginLeft="42px"
+                android:layout_marginRight="42px"
+                android:layout_marginBottom="5px"
+                android:background="@drawable/btn_reklama"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/ibIntro5"
+                android:layout_width="125px"
+                android:layout_height="125px"
+                android:layout_marginLeft="42px"
+                android:layout_marginRight="42px"
+                android:layout_marginBottom="5px"
+                android:layout_alignParentBottom="true"
+                android:layout_toLeftOf="@+id/ibIntro6"
+                android:background="@drawable/btn_video"
+                android:visibility="visible" />
+
+            <ImageButton
+                android:id="@+id/ibIntro4"
+                android:layout_width="125px"
+                android:layout_height="125px"
+                android:layout_alignParentBottom="true"
+                android:layout_marginLeft="42px"
+                android:layout_marginRight="42px"
+                android:layout_marginBottom="5px"
+                android:layout_toLeftOf="@+id/ibIntro5"
+                android:background="@drawable/btn_link"
+                android:visibility="visible" />
 
     </RelativeLayout>
+
 </FrameLayout>

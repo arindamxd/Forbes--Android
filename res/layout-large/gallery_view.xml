@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_gravity="bottom" >
+
+    <RelativeLayout
+        android:id="@+id/rlGalery"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="#000000"
+        
+        android:layout_margin="0px"
+        android:visibility="visible" >
+
+        <RelativeLayout
+            android:id="@+id/rlGaleryContainer"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_above="@+id/rlGalleryButtons"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/ramka2black"
+            android:visibility="visible" >
+
+            <ImageView
+                android:id="@+id/ivGalleryActiveImg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_margin="15dp"
+                android:background="#000000"
+                android:scaleType="centerInside" />
+
+            <ImageView
+                android:id="@+id/loadingGalery"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_margin="15dp"
+                android:src="@drawable/splash_800" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rlGalleryButtons"
+            android:layout_width="fill_parent"
+            android:layout_height="50px"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_margin="1dp"
+            android:visibility="visible" >
+
+            <Button
+                android:id="@+id/galleryNext"
+                android:layout_width="200px"
+                android:layout_height="50px"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="5px"
+                android:background="@drawable/nastepne"
+                android:textColor="#eeeeee"
+                android:textColorHighlight="#000000"
+                android:textSize="30px"
+                android:textStyle="bold"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/galleryPrev"
+                android:layout_width="200px"
+                android:layout_height="50px"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="5px"
+                android:background="@drawable/poprzednie"
+                android:textColor="#eeeeee"
+                android:textColorHighlight="#000000"
+                android:textSize="30px"
+                android:textStyle="bold"
+                android:visibility="visible" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+</FrameLayout>

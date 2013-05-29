@@ -1,7 +1,11 @@
-<?xml version="1.0"?>
-<QCARConfig xsi:noNamespaceSchemaLocation="qcar_config.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <Tracking>
-        <ImageTarget name="stones" size="247 173"/>
-        <ImageTarget name="chips" size="247 173"/>
-    </Tracking>
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="qcar_config.xsd">
+  <Tracking>
+    <ImageTarget size="633.036621 800" name="9" />
+    <ImageTarget size="633.036621 800" name="25" />
+    <ImageTarget size="767.002319 992" name="27" />
+    <ImageTarget size="767.002319 992" name="26" />
+    <ImageTarget size="652.564697 825" name="15" />
+    <ImageTarget size="654.147644 826" name="11" />
+  </Tracking>
 </QCARConfig>
