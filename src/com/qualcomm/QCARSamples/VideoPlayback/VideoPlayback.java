@@ -61,6 +61,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -89,7 +90,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import com.qualcomm.QCARSamples.VideoPlayback.Slownik;
 import com.qualcomm.QCAR.QCAR;
@@ -164,6 +164,10 @@ public class VideoPlayback extends Activity
 	
 	private int current_trackable_id = 0;
 	
+	private boolean audio_is_playing;
+	private boolean audio_is_paused;
+	private MediaPlayer mediaPlayer;
+
     
     // Movie for the Targets:
     public static final int NUM_TARGETS                 = 20;
@@ -184,10 +188,12 @@ public class VideoPlayback extends Activity
     private View mStartupView                           = null;
     private View mWebView                           = null;
     private View mGalleryView                           = null;
+    private View mTopBarView                           = null;
     private ImageView mStartButton                      = null;
     private boolean mButtonScreenShowing                 = false;
     private boolean mWebScreenShowing                 = false;
     private boolean mGalleryScreenShowing                 = false;
+    private boolean mTopBarShowing                 = false;
 
     
   //button view
@@ -664,6 +670,8 @@ public class VideoPlayback extends Activity
             /** Handle the single tap */
             public boolean onSingleTapConfirmed(MotionEvent e)
             {
+            	
+            	
                 // Do not react if the StartupScreen is being displayed
                 if (mButtonScreenShowing)
                     return false;
@@ -1038,6 +1046,15 @@ public class VideoPlayback extends Activity
 	}
 	
 	public void timer_action(){
+
+		runOnUiThread(new Runnable() {
+		     public void run() {
+		
+        setupTopBarScreen();
+        showTopBarScreen();
+		     }
+		});
+        
 //		Log.i("timer_action","timer_action: START ");
 		String trackable_id = VideoPlaybackRenderer.getDefaults("trackable_id",  getApplicationContext() );
 		if(trackable_id == null){
@@ -1048,6 +1065,10 @@ public class VideoPlayback extends Activity
 				current_trackable_id = Integer.parseInt(trackable_id);
 				//CHANGE ICON
 				Log.i("CHANGE ICONS SET","CHANGE ICONS SET");
+				if ( audio_is_playing ){
+            		stopAudio();
+            	}
+				
 				try {
 					setCurrentTrackableData();
 					Log.i("setCurrentTrackableData", " setCurrentTrackableData: " + json_tracker_active_data );
@@ -1057,6 +1078,7 @@ public class VideoPlayback extends Activity
 						     public void run() {
 						    	 Log.i("-----------------------", "-----------------------");
 						    	 hideButtonsScreen();
+						    	 
 						//stuff that updates ui
 
 						    }
@@ -1069,6 +1091,8 @@ public class VideoPlayback extends Activity
 						
 						runOnUiThread(new Runnable() {
 						     public void run() {
+						    	
+						        
 						    	 setupButtonsScreen();
 						    	 try {
 									setButtonsForCurrentTrackable();
@@ -1304,8 +1328,84 @@ private void galleryButtonsInitialization(){
 		    
 	}
 	
+	private void actionAudio( int action ){
+		try {
+			for ( int j=0; j < json_audio_trackers_data.length(); j++ ){
+				JSONObject wiersz_audio = (JSONObject) json_audio_trackers_data.get(j);
+				int af_id = wiersz_audio.getInt("af_id");
+				Log.i("----> :", Integer.toString(action) + " ?? " + Integer.toString( af_id ) );
+				if ( action == af_id ){
+					Log.i("----> guzik info:", wiersz_audio.toString() );
+					
+					playStopAudio(wiersz_audio.getString("af_url"));
+				}
+			}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
+	public void playStopAudio(String action) {
+		if (audio_is_playing) {
+			stopAudio();
+		} else if (audio_is_paused) {
+			stopAudio();
+		} else {
+//			ImageButton ibPlayPause = (ImageButton) findViewById(R.id.ibPlayPause);
+//			ibPlayPause.setVisibility(View.VISIBLE);
+			Uri uri = Uri.parse(action);
+			mediaPlayer = MediaPlayer.create( getApplicationContext(), uri);
+			playAudio();
+		}
+	}
 	
+	public void pauseAndplayAudio(String action) {
+		Uri uri = Uri.parse(action);
+		mediaPlayer = MediaPlayer.create( getApplicationContext(), uri );
+		if (audio_is_playing) {
+			pauseAudio();
+		}
+		playAudio();
+	}
+
+	public void stopAudio() {
+//		ImageButton ibPlayPause = (ImageButton) findViewById(R.id.ibPlayPause);
+//		ibPlayPause.setVisibility(View.INVISIBLE);
+		audio_is_playing = false;
+		audio_is_paused = false;
+		mediaPlayer.stop();
+	}
+
+	public void pauseAudio() {
+		if ( audio_is_playing ){
+//			ImageButton ibPlayPause = (ImageButton) findViewById(R.id.ibPlayPause);
+//			ibPlayPause.setVisibility(View.VISIBLE);
+//			ibPlayPause.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_play));
+			audio_is_playing = false;
+			audio_is_paused = true;
+			mediaPlayer.pause();
+		}
+	}
+
+	public void playAudio() {
+//		ImageButton ibPlayPause = (ImageButton) findViewById(R.id.ibPlayPause);
+//		ibPlayPause.setVisibility(View.VISIBLE);
+//		ibPlayPause.setBackgroundDrawable(getResources().getDrawable(R.drawable.btn_pause));
+		audio_is_playing = true;
+		audio_is_paused = false;
+		try {
+			// playPauseButton.setVisibility( View.VISIBLE );
+			// playPauseButton.setText("PAUSE");
+			// seekBar.setVisibility( View.VISIBLE );
+			// tvKameraInfo.setVisibility( View.INVISIBLE );
+			mediaPlayer.start();
+			// startPlayProgressUpdater();
+
+		} catch (IllegalStateException e) {
+			mediaPlayer.pause();
+		}
+	}
 	
 	private void showHideButtons() throws JSONException{
 		ukryjWszystkieButtonki();
@@ -1340,8 +1440,14 @@ private void galleryButtonsInitialization(){
 					if ( znacznik_id == 1 ){
 						akcjaWWW(action);
 					}
+					else if ( znacznik_id == 2 ){
+						akcjaWWW(action);
+					}
 					else if ( znacznik_id == 3 ){
 						actionGaleria(Integer.parseInt(action));
+					}
+					else if ( znacznik_id == 5){
+						actionAudio(Integer.parseInt(action));
 					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
@@ -2160,6 +2266,39 @@ private void galleryButtonsInitialization(){
         }
     }
     
+    private void setupTopBarScreen() {
+
+//    	Log.i("setupTopBarScreen","setupTopBarScreen: " + mTopBarView);
+    	if ( mTopBarView == null ){
+    		mTopBarView = getLayoutInflater().inflate( R.layout.topbar_view, null);
+	        addContentView(mTopBarView, new LayoutParams( LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+	        Button bbutton = (Button) findViewById(R.id.buttonTopBarWWW);
+	        bbutton.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					Log.i("fsdfdsfdsfsfsdf", "gdfgdfgfdgfdgdf");
+					akcjaWWW("http://forbes.pl");
+				}
+	        });
+    	}
+    	mTopBarShowing = true;
+    }
+    
+    private void showTopBarScreen()  {
+//    	Log.i("showTopBarScreen","showTopBarScreen: " + mTopBarView);
+        if (mTopBarView != null)  {
+        	mTopBarView.setVisibility(View.VISIBLE);
+            mTopBarShowing = true;
+        }
+    }
+    private void hideTopBarScreen()   {
+        if (mTopBarView != null) {
+        	mTopBarView.setVisibility(View.INVISIBLE);
+        	mTopBarShowing = false;
+        }
+    }
+    
+    
+    
     
     
     /** TUTORIAL END */
@@ -2189,9 +2328,13 @@ private void galleryButtonsInitialization(){
         }
     }
 
+    
     /** Do not exit immediately and instead show the startup screen */
     public void onBackPressed() {
 
+    	if ( audio_is_playing ){
+    		stopAudio();
+    	}
 //        // If this is the first time the back button is pressed
 //        // show the StartupScreen and pause all media:
     	if (mGalleryScreenShowing) {
@@ -2203,10 +2346,10 @@ private void galleryButtonsInitialization(){
         	hideWebScreen();
         	return;
         }
-    	if (mButtonScreenShowing) {
-        	hideButtonsScreen();
-        	return;
-        }
+//    	if (mButtonScreenShowing) {
+//        	hideButtonsScreen();
+//        	return;
+//        }
     	
     	
 //            // Show the startup screen:
@@ -2263,6 +2406,8 @@ private void galleryButtonsInitialization(){
                         LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
         mSplashScreenStartTime = System.currentTimeMillis();
+        
+        
 
     }
 
@@ -2299,6 +2444,7 @@ private void galleryButtonsInitialization(){
         }
 
         mGlView.setRenderer(mRenderer);
+        
     }
     
     /** Invoked every time before the options menu gets displayed to give

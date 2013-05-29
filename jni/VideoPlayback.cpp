@@ -758,6 +758,8 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame(JN
 			//LOG("SHOW CUBE" );
 			//[self renderBlackSomethingOverMakrer :trackableResult];
 			//[self renderLogoOverMakrer:trackableResult];
+
+			renderFrame_renderStronaBG( trackableResult, currentTarget );
 		}
 		else if ( emt_id == 6 ){
 			//LOG("GALERY ON START" );
@@ -783,9 +785,7 @@ Java_com_qualcomm_QCARSamples_VideoPlayback_VideoPlaybackRenderer_renderFrame(JN
 				renderFrame_renderActualContents( trackableResult, currentTarget );
 			}
 
-
 			renderFrame_renderPlayerIcon( trackableResult, currentTarget );
-
 			renderFrame_renderStronaBG( trackableResult, currentTarget );
         }
 
