@@ -100,6 +100,7 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
     
     public void requestLoad(int target, String movieName, int seekPosition, boolean playImmediately)
     {
+//    	playImmediately = true;
         mMovieName[target] = movieName;
         mSeekPosition[target] = seekPosition;
         mShouldPlayImmediately[target] = playImmediately;
@@ -280,8 +281,12 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
                     // First we need to update the video data. This is a built in Android call
                     // Here, the decoded data is uploaded to the OES texture
                     // We only need to do this if the movie is playing
-                    if (mVideoPlayerHelper[i].getStatus() == MEDIA_STATE.PLAYING)
-                        mVideoPlayerHelper[i].updateVideoData();
+                    if (mVideoPlayerHelper[i].getStatus() == MEDIA_STATE.PLAYING){
+//                    	Log.i("MEDIA_STATE.PLAYING", "MEDIA_STATE.PLAYING");
+                    	mVideoPlayerHelper[i].updateVideoData();
+                    	
+                    }
+                        
 
                     // According to the Android API (http://developer.android.com/reference/android/graphics/SurfaceTexture.html)
                     // transforming the texture coordinates needs to happen every frame.
@@ -304,31 +309,32 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
         // Call our native function to render content
         renderFrame();
 
-        for (int i = 0; i < VideoPlayback.NUM_TARGETS; i++)
-        {
-            // Ask whether the target is currently being tracked and if so react to it
-            if (isTracking(i))
-            {
-                // If it is tracking reset the timestamp for lost tracking
-                mLostTrackingSince[i] = -1;
-            }
-            else
-            {
-                // If it isn't tracking
-                // check whether it just lost it or if it's been a while
-                if (mLostTrackingSince[i] < 0)
-                    mLostTrackingSince[i] = SystemClock.uptimeMillis();
-                else
-                {
-                    // If it's been more than 2 seconds then pause the player
-                    if ((SystemClock.uptimeMillis()-mLostTrackingSince[i]) > 2000)
-                    {
-                        if (mVideoPlayerHelper[i] != null)
-                            mVideoPlayerHelper[i].pause();
-                    }
-                }
-            }
-        }
+//        
+//        for (int i = 0; i < VideoPlayback.NUM_TARGETS; i++)
+//        {
+//            // Ask whether the target is currently being tracked and if so react to it
+//            if (isTracking(i))
+//            {
+//                // If it is tracking reset the timestamp for lost tracking
+//                mLostTrackingSince[i] = -1;
+//            }
+//            else
+//            {
+//                // If it isn't tracking
+//                // check whether it just lost it or if it's been a while
+//                if (mLostTrackingSince[i] < 0)
+//                    mLostTrackingSince[i] = SystemClock.uptimeMillis();
+//                else
+//                {
+//                    // If it's been more than 2 seconds then pause the player
+//                    if ((SystemClock.uptimeMillis()-mLostTrackingSince[i]) > 2000)
+//                    {
+//                        if (mVideoPlayerHelper[i] != null)
+//                            mVideoPlayerHelper[i].pause();
+//                    }
+//                }
+//            }
+//        }
 
         // If you would like the video to start playing as soon as it starts tracking
         // and pause as soon as tracking is lost you can do that here by commenting
@@ -336,6 +342,35 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
         // changed since the last frame. Notice that you need to be careful not to
         // trigger automatic playback for fullscreen since that will be inconvenient
         // for your users.
-
+        for (int i = 0; i < VideoPlayback.NUM_TARGETS; i++)
+        {
+            // Ask whether the target is currently being tracked and if so react to it
+            if (isTracking(i))
+            {
+                // If it is tracking reset the timestamp for lost tracking
+             //   mLostTrackingSince[i] = -1;
+                if (mVideoPlayerHelper[i] != null)
+                mVideoPlayerHelper[i].play(false, -1);
+            }
+            else
+            {
+                // If it isn't tracking
+                // check whether it just lost it or if it's been a while
+              //  if (mLostTrackingSince[i] < 0)
+              //      mLostTrackingSince[i] = SystemClock.uptimeMillis();
+              //  else
+              //  {
+                    // If it's been more than 2 seconds then pause the player
+               //     if ((SystemClock.uptimeMillis()-mLostTrackingSince[i]) > 2000)
+               //     {
+                        if (mVideoPlayerHelper[i] != null)
+                            mVideoPlayerHelper[i].pause();
+               //     }
+               // }
+            }
+        }
+        
+        
+        
     }
 }

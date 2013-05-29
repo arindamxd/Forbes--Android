@@ -131,6 +131,7 @@ public class VideoPlayerHelper implements OnPreparedListener,
     public boolean load(String filename, MEDIA_TYPE requestedType,
         boolean playOnTextureImmediately, int seekPosition)
     {
+//    	playOnTextureImmediately = true;
     	Log.i("VPH::load", "VPH::load::" + filename );
         // If the client requests that we should be able to play ON_TEXTURE,
         // then we need to create a MediaPlayer:

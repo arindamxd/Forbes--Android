@@ -83,6 +83,7 @@ import android.view.MotionEvent;
 
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
+import android.view.animation.TranslateAnimation;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -188,11 +189,13 @@ public class VideoPlayback extends Activity
     private View mStartupView                           = null;
     private View mWebView                           = null;
     private View mGalleryView                           = null;
+    private View mScannerView                           = null;
     private View mTopBarView                           = null;
     private ImageView mStartButton                      = null;
     private boolean mButtonScreenShowing                 = false;
     private boolean mWebScreenShowing                 = false;
     private boolean mGalleryScreenShowing                 = false;
+    private boolean mScannerScreenShowing                 = false;
     private boolean mTopBarShowing                 = false;
 
     
@@ -294,7 +297,7 @@ public class VideoPlayback extends Activity
         {
                 Log.i( "makemachine", "onPreExecute()" );
                 ImageView loadingGalery = ( ImageView ) findViewById( R.id.loadingGalery );
-                loadingGalery.setVisibility( View.VISIBLE );
+                loadingGalery.setVisibility( View.INVISIBLE );
                 super.onPreExecute();     
         }
         
@@ -754,6 +757,30 @@ public class VideoPlayback extends Activity
       }
   }
     
+     
+     
+     private void moveViewToScreenCenter( View view )
+     {
+         RelativeLayout root = (RelativeLayout) findViewById( R.id.rlScaner );
+         DisplayMetrics dm = new DisplayMetrics();
+         this.getWindowManager().getDefaultDisplay().getMetrics( dm );
+         int statusBarOffset = dm.heightPixels - root.getMeasuredHeight();
+
+         int originalPos[] = new int[2];
+         view.getLocationOnScreen( originalPos );
+
+         int xDest = dm.widthPixels/2;
+         xDest -= (view.getMeasuredWidth()/2);
+         int yDest = dm.heightPixels/2 - (view.getMeasuredHeight()/2) - statusBarOffset;
+
+         TranslateAnimation anim = new TranslateAnimation( 0, xDest - originalPos[0] , 0, yDest - originalPos[1] );
+         anim.setDuration(1000);
+         anim.setFillAfter( true );
+         view.startAnimation(anim);
+     }
+     
+     
+     
     
      
     public void get_trackables_dirs(){	
@@ -1098,6 +1125,32 @@ public class VideoPlayback extends Activity
 						    	 try {
 									setButtonsForCurrentTrackable();
 									showHideButtons();
+									//test is autorun ?
+									int emt_id = json_tracker_active_data.getInt("emt_id");
+									
+									if ( emt_id == 11 ){
+										//
+										Log.i("AUTORUN","AUTORUN");
+										//first button
+										JSONObject minfo = json_buttons_for_tracker.get(0);
+										int znacznik_id = minfo.getInt("znacznik_id");
+										String action = minfo.getString("action");
+										Log.i("button clicked", "button_clicked: action:" + action + 
+												" znacznik_id:" + Integer.toString(znacznik_id));
+										if ( znacznik_id == 1 ){
+											akcjaWWW(action);
+										}
+										else if ( znacznik_id == 2 ){
+											akcjaWWW(action);
+										}
+										else if ( znacznik_id == 3 ){
+											actionGaleria(Integer.parseInt(action));
+										}
+										else if ( znacznik_id == 5){
+											actionAudio(Integer.parseInt(action));
+										}
+									}
+									
 								} catch (JSONException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
@@ -1421,6 +1474,8 @@ private void galleryButtonsInitialization(){
 ;				Log.i("guzik", "guzik " + i + ": " + guzik.toString() );
 			}
 		}
+		
+		
 	}
 	
 	private void setButtonInterfaceActive(JSONObject minfo, ImageButton ib, int D_id) {
@@ -2248,6 +2303,7 @@ private void galleryButtonsInitialization(){
     }
     
 
+    
     private void setupGalleryScreen() {
     	if ( mGalleryView == null ){
     		mGalleryView = getLayoutInflater().inflate( R.layout.gallery_view, null);
@@ -2301,7 +2357,27 @@ private void galleryButtonsInitialization(){
     }
     
     
-    
+//    
+//    private void setupScannerScreen() {
+//    	if ( mScannerView == null ){
+//    		mScannerView = getLayoutInflater().inflate( R.layout.scaner_view, null);
+//	        addContentView(mGalleryView, new LayoutParams( LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+//    	}
+//    	mGalleryScreenShowing = true;
+//    }
+//    private void showScannerScreen()  {
+//    	Log.i("showWebScreen","showWebScreen");
+//        if (mGalleryView != null)  {
+//        	mGalleryView.setVisibility(View.VISIBLE);
+//            mGalleryScreenShowing = true;
+//        }
+//    }
+//    private void hideScannerScreen()   {
+//        if (mGalleryView != null) {
+//        	mGalleryView.setVisibility(View.INVISIBLE);
+//        	mGalleryScreenShowing = false;
+//        }
+//    }
     
     
     /** TUTORIAL END */
