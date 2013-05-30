@@ -83,6 +83,7 @@ import android.view.MotionEvent;
 
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
+import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -169,6 +170,8 @@ public class VideoPlayback extends Activity
 	private boolean audio_is_paused;
 	private MediaPlayer mediaPlayer;
 
+
+    private Animation mAnimation;
     
     // Movie for the Targets:
     public static final int NUM_TARGETS                 = 30;
@@ -529,6 +532,7 @@ public class VideoPlayback extends Activity
 
         
         
+        VideoPlaybackRenderer.setDefaults("isTracked", "0", getApplicationContext() );
         
         
 //        for (int i = 0; i < this.json_trackers_data.length(); i++)
@@ -565,6 +569,10 @@ public class VideoPlayback extends Activity
 //				e1.printStackTrace();
 //			}
 //        }
+//        private ImageView mScanner;
+     
+        
+        
         
         
         mVideoPlayerHelper = new VideoPlayerHelper[NUM_TARGETS];
@@ -759,25 +767,6 @@ public class VideoPlayback extends Activity
     
      
      
-     private void moveViewToScreenCenter( View view )
-     {
-         RelativeLayout root = (RelativeLayout) findViewById( R.id.rlScaner );
-         DisplayMetrics dm = new DisplayMetrics();
-         this.getWindowManager().getDefaultDisplay().getMetrics( dm );
-         int statusBarOffset = dm.heightPixels - root.getMeasuredHeight();
-
-         int originalPos[] = new int[2];
-         view.getLocationOnScreen( originalPos );
-
-         int xDest = dm.widthPixels/2;
-         xDest -= (view.getMeasuredWidth()/2);
-         int yDest = dm.heightPixels/2 - (view.getMeasuredHeight()/2) - statusBarOffset;
-
-         TranslateAnimation anim = new TranslateAnimation( 0, xDest - originalPos[0] , 0, yDest - originalPos[1] );
-         anim.setDuration(1000);
-         anim.setFillAfter( true );
-         view.startAnimation(anim);
-     }
      
      
      
@@ -1073,18 +1062,42 @@ public class VideoPlayback extends Activity
 		}
 	}
 	
+	
+
+    
+    
 	public void timer_action(){
 
+//		Log.i("emt_id","emt_id " + );
+		
 		runOnUiThread(new Runnable() {
 		     public void run() {
 		
-        setupTopBarScreen();
-        showTopBarScreen();
+		        setupTopBarScreen();
+		        showTopBarScreen();
+		        
+		        String isTracked = VideoPlaybackRenderer.getDefaults("isTracked", getApplicationContext() );
+		        
+				if( Integer.parseInt(isTracked) == 1 ){
+					hideScannerScreen();
+				}
+				else{
+					showScannerScreen();
+				}
+		
+				
 		     }
 		});
-        
-//		Log.i("timer_action","timer_action: START ");
+		
+
+		
+		
 		String trackable_id = VideoPlaybackRenderer.getDefaults("trackable_id",  getApplicationContext() );
+
+		
+		
+		
+		
 		if(trackable_id == null){
 			Log.i("timer_action","timer_action: NULUUULUULL ");
 		}
@@ -1497,7 +1510,17 @@ private void galleryButtonsInitialization(){
 						akcjaWWW(action);
 					}
 					else if ( znacznik_id == 2 ){
+//						if ( current_trackable_id != 26 && current_trackable_id != 27){
 						akcjaWWW(action);
+//						}
+//						else{
+//						Intent mPlayerHelperActivityIntent = new Intent(getApplicationContext(), FullscreenPlayback.class);
+//	                    mPlayerHelperActivityIntent.setAction(android.content.Intent.ACTION_VIEW);
+//	                    mPlayerHelperActivityIntent.putExtra("shouldPlayImmediately", true);
+//	                    mPlayerHelperActivityIntent.putExtra("movieName", "http://forbes.arfixer.eu/video/ny.mp4");
+//	                    startActivityForResult(mPlayerHelperActivityIntent,1);
+//						}
+//	                    canBeFullscreen = true;
 					}
 					else if ( znacznik_id == 3 ){
 						actionGaleria(Integer.parseInt(action));
@@ -1632,30 +1655,22 @@ private void galleryButtonsInitialization(){
 		
 		
 		
-		
-//		int curent_tid = getCurrentTid();
-		
-		
-//		Log.i("curent_tid", "<--------------"+Integer.toString(curent_tid));
-//		Log.i("ACTION_ACTIVATELIB", "ACTION_ACTIVATELIB: after load active");
-//		rlLoading.setVisibility(View.INVISIBLE);
-//		try {
-//			Log.i("rlLoading.getVisibility", Integer.toString(rlLoading.getVisibility()) );
-//			if ( guzik_info.getString("action").equalsIgnoreCase("auto") ){
-//				rlTutorial.setVisibility(View.VISIBLE);
-//				rlKameraLogo.setVisibility(View.INVISIBLE);
-//				Log.i("rlLoading.getVisibility", Integer.toString(rlLoading.getVisibility()) );
-//				
-//			}else{
-//				rlTutorial.setVisibility(View.GONE);
-//				rlKameraLogo.setVisibility(View.VISIBLE);
-//			}
-//			Log.i("rlLoading.getVisibility", Integer.toString(rlLoading.getVisibility()) );
-//			
-//		} catch (JSONException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		   setupScannerScreen();
+//	        showScannerScreen();
+	        
+	        DisplayMetrics dm = new DisplayMetrics();
+	        this.getWindowManager().getDefaultDisplay().getMetrics( dm );
+	        int screen_height = dm.heightPixels;
+	       
+	        
+	        
+	        mAnimation = new TranslateAnimation(0, 0, 0, (screen_height-100)*-1);
+	        mAnimation.setDuration(10000);
+	        mAnimation.setFillAfter(true);
+	        mAnimation.setRepeatCount(-1);
+	        mAnimation.setRepeatMode(Animation.REVERSE);
+	        
+	   
 	}
 	
 	
@@ -2263,7 +2278,7 @@ private void galleryButtonsInitialization(){
     
     private void showButtonsScreen()
     {
-    	Log.i("showStartupScreen","showStartupScreen");
+    	Log.i("showButtonsScreen","showButtonsScreen");
         if (mStartupView != null)
         {
             mStartupView.setVisibility(View.VISIBLE);
@@ -2357,27 +2372,35 @@ private void galleryButtonsInitialization(){
     }
     
     
-//    
-//    private void setupScannerScreen() {
-//    	if ( mScannerView == null ){
-//    		mScannerView = getLayoutInflater().inflate( R.layout.scaner_view, null);
-//	        addContentView(mGalleryView, new LayoutParams( LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-//    	}
-//    	mGalleryScreenShowing = true;
-//    }
-//    private void showScannerScreen()  {
-//    	Log.i("showWebScreen","showWebScreen");
-//        if (mGalleryView != null)  {
-//        	mGalleryView.setVisibility(View.VISIBLE);
-//            mGalleryScreenShowing = true;
-//        }
-//    }
-//    private void hideScannerScreen()   {
-//        if (mGalleryView != null) {
-//        	mGalleryView.setVisibility(View.INVISIBLE);
-//        	mGalleryScreenShowing = false;
-//        }
-//    }
+    
+    private void setupScannerScreen() {
+    	if ( mScannerView == null ){
+    		mScannerView = getLayoutInflater().inflate( R.layout.scaner_view, null);
+	        addContentView(mScannerView, new LayoutParams( LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+    	}
+    	mScannerScreenShowing = true;
+    }
+    private void showScannerScreen()  {
+//    	Log.i("showScannerScreen","showScannerScreen:" + a.toString());
+    	if ( mScannerView.getAnimation() == null ){
+    		mScannerView.setAnimation(mAnimation);
+    	}
+        
+        if (mScannerView != null)  {
+        	mScannerView.setVisibility(View.VISIBLE);
+            mScannerScreenShowing = true;
+        }
+    }
+    private void hideScannerScreen()   {
+    	
+        if (mScannerView != null) {
+        	mScannerView.clearAnimation();
+	        
+        	Log.i("hideScannerScreen","hideScannerScreen");
+           	mScannerView.setVisibility(View.INVISIBLE);
+        	mScannerScreenShowing = false;
+        }
+    }
     
     
     /** TUTORIAL END */
@@ -2411,9 +2434,7 @@ private void galleryButtonsInitialization(){
     /** Do not exit immediately and instead show the startup screen */
     public void onBackPressed() {
 
-    	if ( audio_is_playing ){
-    		stopAudio();
-    	}
+    
 //        // If this is the first time the back button is pressed
 //        // show the StartupScreen and pause all media:
     	if (mGalleryScreenShowing) {
@@ -2425,6 +2446,11 @@ private void galleryButtonsInitialization(){
         	hideWebScreen();
         	return;
         }
+    	
+    	if ( audio_is_playing ){
+    		stopAudio();
+    		return;
+    	}
 //    	if (mButtonScreenShowing) {
 //        	hideButtonsScreen();
 //        	return;
@@ -2447,8 +2473,22 @@ private void galleryButtonsInitialization(){
     		}
     	
     	
+    	AlertDialog alertDialog = new AlertDialog.Builder( this ).create();
+        alertDialog.setTitle("Uwaga");
+        alertDialog.setMessage("Zamierzasz zamknˆ aplikacj«. Czy zamknˆ ?");
+        alertDialog.setButton("TAK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+            	System.exit(0);
+          } }); 
+        alertDialog.setButton2("NIE", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+              return;
+          } }); 
+          
+        alertDialog.show();
+        
             // And exit:
-            super.onBackPressed();
+//            super.onBackPressed();
 //        }
     }
 

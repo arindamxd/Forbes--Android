@@ -45,6 +45,7 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnVideoSizeChangedListener;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -164,10 +165,19 @@ public class FullscreenPlayback extends Activity implements
                 // folder of the app. However, if you would like to load the
                 // movie from the SD card or from a network location, simply
                 // comment the four lines below:
-                AssetFileDescriptor afd = getAssets().openFd(mMovieName);
-                mMediaPlayer.setDataSource(afd.getFileDescriptor(),
-                    afd.getStartOffset(), afd.getLength());
-                afd.close();
+                if ( mMovieName.contains("http://")){
+
+                	Log.i("CONTAINS", "CONTAINS:" + mMovieName);
+                	mMediaPlayer.setDataSource(mMovieName);
+                }
+                else{
+                	Log.i("NO CONTAINS", "NO CONTAINS");
+                	AssetFileDescriptor afd = getAssets().openFd(mMovieName);
+                    mMediaPlayer.setDataSource(afd.getFileDescriptor(),
+                        afd.getStartOffset(), afd.getLength());
+                    afd.close();
+                }
+                
 
                 // And uncomment this line:
                 // mMediaPlayer.setDataSource("/sdcard/myMovie.m4v");
