@@ -34,6 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.R.bool;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.opengl.GLSurfaceView;
@@ -125,6 +126,7 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
     /** Native function that informs whether the target is currently being tracked. */
     public native boolean isTracking(int target);
 
+    private int isTracked = 0;
     
     /** Returns the number of registered textures. */
     public int getTrackablesCount()
@@ -342,18 +344,24 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
         // changed since the last frame. Notice that you need to be careful not to
         // trigger automatic playback for fullscreen since that will be inconvenient
         // for your users.
+        int isTrackedNow = 0;
         for (int i = 0; i < VideoPlayback.NUM_TARGETS; i++)
         {
             // Ask whether the target is currently being tracked and if so react to it
             if (isTracking(i))
             {
+//            	appContext
                 // If it is tracking reset the timestamp for lost tracking
              //   mLostTrackingSince[i] = -1;
                 if (mVideoPlayerHelper[i] != null)
-                mVideoPlayerHelper[i].play(false, -1);
+                	mVideoPlayerHelper[i].play(false, -1);
+                
+//                Log.i("VPR","VPR: is");
+                isTrackedNow = 1;
             }
             else
             {
+            	
                 // If it isn't tracking
                 // check whether it just lost it or if it's been a while
               //  if (mLostTrackingSince[i] < 0)
@@ -368,6 +376,14 @@ public class VideoPlaybackRenderer implements GLSurfaceView.Renderer
                //     }
                // }
             }
+        }
+        
+
+//		Log.i("VPR","VPR: " + Integer.toString(isTrackedNow) + "??" + Integer.toString(isTracked));
+		
+        if ( isTrackedNow != isTracked ){
+        	isTracked = isTrackedNow;
+        	VideoPlaybackRenderer.setDefaults("isTracked", Integer.toString(isTrackedNow), appContext);
         }
         
         

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="150dp"
+    android:layout_height="54dp"
     android:layout_gravity="bottom" >
 
     <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="138dp"
+        android:layout_width="533dp"
+        android:layout_height="54dp"
         android:layout_gravity="bottom" >
 
         <ImageButton
