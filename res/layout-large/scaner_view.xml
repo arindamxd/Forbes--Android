@@ -7,7 +7,7 @@
     <RelativeLayout
         android:id="@+id/rlScaner"
         android:layout_width="match_parent"
-        android:layout_height="61dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_margin="0px"
         android:background="@android:color/transparent"
@@ -23,11 +23,11 @@
 
         <ImageView
             android:id="@+id/imageView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="200dp"
+            android:layout_height="63dp"
+            android:layout_above="@+id/imageView1"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="143dp"
+            android:layout_marginLeft="23dp"
             android:src="@drawable/icon2" />
 
     </RelativeLayout>

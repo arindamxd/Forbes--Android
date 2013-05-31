@@ -7,7 +7,7 @@
     <RelativeLayout
         android:id="@+id/rlWeb"
         android:layout_width="fill_parent"
-        android:layout_height="750px"
+        android:layout_height="match_parent"
         android:layout_margin="0px"
         android:visibility="visible" >
 
